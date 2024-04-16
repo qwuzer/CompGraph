@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>WebPage Title </title>
+        <style>
+            #textContainer {
+                position: absolute;
+                top: 50px; /* Adjust the top position as needed */
+                left: 1020px; /* Adjust the left position as needed */
+                font-family: Arial, sans-serif; /* Adjust the font-family as needed */
+                font-size: 30px; /* Adjust the font size as needed */
+            }
+        </style>
+    </head>
+
+    <body onload="main()">
+        <canvas id="webgl" width = "1000" height = "1000">
+            Please use a browser that support "canvas"
+        </canvas>
+        <div id="textContainer">
+            w,a,s,d: move the robot
+            <br>
+            r,t : rotate the robot's claws
+            <br>
+            n,m : rotate the robot's 1st joint
+            <br>
+            o,p : rotate the robot's 2nd joint
+            <br>
+            j,k : rotate the robot's 3rd joint
+            <br>
+            1,2 to move the object's arm
+            <br>
+            3,4 to rotate the object's leg
+            <br>
+            =,- to scale the whole scene up and down
+            <br>
+            g to grab and release the object
+            <br>
+            NOTE: In order to grab the object, touch the object's head with the left claw
+        </div>
+        <script src="cuon-matrix.js"></script>
+        <script src="WebGL.js"></script>
+    </body>
+</html>
+
+
