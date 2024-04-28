@@ -133,6 +133,8 @@ function main(){
 function draw(){
     gl.clearColor(0,0,0,1);
 
+    // modelMatrix.translate(0, 0, -1);
+    // modelMatrix.scale(1.0, 5, 2.0);
     //model Matrix (part of the mvp matrix)
     modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
     modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation

@@ -124,7 +124,7 @@ function draw(){
     mvpMatrix.lookAt(cameraX, cameraY, cameraZ, 0, 0, 0, 0, 1, 0);
     mvpMatrix.multiply(modelMatrix);
 
-    gl.uniform3f(program.u_LightPosition, 0, 0, 3.0);
+    gl.uniform3f(program.u_LightPosition, 0.0, 0, 2.0);
     gl.uniform1f(program.u_Ka, 0.2);
     gl.uniform1f(program.u_Kd, 0.7);
 
