@@ -24,14 +24,32 @@ var FSHADER_SOURCE = `
     uniform float u_Kd;
     uniform float u_Ks;
     uniform float u_shininess;
-    uniform sampler2D u_Sampler;
+    uniform sampler2D u_Sampler0;
+    uniform sampler2D u_Sampler1;
+    uniform sampler2D u_Sampler2;
     varying vec3 v_Normal;
     varying vec3 v_PositionInWorld;
     varying vec2 v_TexCoord;
     void main(){
         // let ambient and diffuse color are u_Color 
         // (you can also input them from ouside and make them different)
-        vec3 texColor = texture2D( u_Sampler, v_TexCoord ).rgb;
+        vec3 texColor0 = texture2D( u_Sampler0, v_TexCoord ).rgb;
+        vec3 texColor1 = texture2D( u_Sampler1, v_TexCoord ).rgb;
+        vec3 texColor2 = texture2D( u_Sampler2, v_TexCoord ).rgb;
+        vec3 texColor = texColor0;
+
+        //if the fragment color is blue, then use color from LVtexture
+        if( distance( texColor0, vec3(0.0, 0.0, 1.0) ) < 0.6 ){
+          texColor = texColor1;
+        } 
+
+        // //if the fragment color is red, then use color from heart
+        if( distance( texColor0, vec3(1.0, 0.0, 0.0) ) < 0.7 ){
+          if( distance( texColor2, vec3(1.0, 1.0, 1.0) ) < 0.3 ){
+            texColor = texColor0 * 0.4 + texColor2 * 0.6;
+          }
+        }
+       
         vec3 ambientLightColor = texColor;
         vec3 diffuseLightColor = texColor;
         // assume white specular light (you can also input it from ouside)
@@ -147,17 +165,14 @@ var mvpMatrix;
 var modelMatrix;
 var normalMatrix;
 var nVertex;
-var cameraX = 3, cameraY = 3, cameraZ = 7;
-var objScale = 0.05;
+var cameraX = 3, cameraY = 3, cameraZ = 10;
+var objScale = 0.03;
 var objComponents = [];
 var textures = {};
-// var imgNames = ["64124be4.jpg", "bab97353.jpg", "d1419efe.jpg", "f1f6d3cb.jpg"];
-var imgNames = ["marioD.jpg"];
-var objCompImgIndex = ["marioD.jpg"];
-// var objCompImgIndex = ["d1419efe.jpg", "64124be4.jpg", "64124be4.jpg", "f1f6d3cb.jpg", 
-//                        "bab97353.jpg", "64124be4.jpg", "64124be4.jpg", "64124be4.jpg", 
-//                        "f1f6d3cb.jpg", "64124be4.jpg", "bab97353.jpg", "f1f6d3cb.jpg", 
-//                        "d1419efe.jpg"];
+
+var imgNames = ["marioD.jpg", "LVTexture.jpg", "heart.jpg"];
+var objCompImgIndex = ["marioD.jpg", "LVTexture.jpg", "heart.jpg"];
+
 var texCount = 0;
 var numTextures = imgNames.length;
 
@@ -185,7 +200,9 @@ async function main(){
     program.u_Kd = gl.getUniformLocation(program, 'u_Kd');
     program.u_Ks = gl.getUniformLocation(program, 'u_Ks');
     program.u_shininess = gl.getUniformLocation(program, 'u_shininess');
-    program.u_Sampler = gl.getUniformLocation(program, "u_Sampler")
+    program.u_Sampler0 = gl.getUniformLocation(program, "u_Sampler0");
+    program.u_Sampler1 = gl.getUniformLocation(program, "u_Sampler1");
+    program.u_Sampler2 = gl.getUniformLocation(program, "u_Sampler2");
 
     response = await fetch('mario.obj');
     text = await response.text();
@@ -248,11 +265,19 @@ function draw(){
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    for( let i=0; i < objComponents.length; i ++ ){
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures[objCompImgIndex[i]]);
-      gl.uniform1i(program.u_Sampler, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, textures[objCompImgIndex[0]]);
+    gl.uniform1i(program.u_Sampler0, 0);
 
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, textures[objCompImgIndex[1]]);
+    gl.uniform1i(program.u_Sampler1, 1);
+
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, textures[objCompImgIndex[2]]);
+    gl.uniform1i(program.u_Sampler2, 2);
+    
+    for( let i=0; i < objComponents.length; i ++ ){
       initAttributeVariable(gl, program.a_Position, objComponents[i].vertexBuffer);
       initAttributeVariable(gl, program.a_TexCoord, objComponents[i].texCoordBuffer);
       initAttributeVariable(gl, program.a_Normal, objComponents[i].normalBuffer);
@@ -459,4 +484,5 @@ function initTexture(gl, img, imgName){
   texCount++;
   if( texCount == numTextures)draw();
 }
+
 

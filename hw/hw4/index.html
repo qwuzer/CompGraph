@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>WebPage Title </title>
+    </head>
+
+    <body onload="main()">
+        <canvas id="webgl" width = "800" height = "800">
+            Please use a browser that support "canvas"
+        </canvas>
+        <script src="cuon-matrix.js"></script>
+        <script src="WebGL.js"></script>
+        <div class="slidecontainer1">
+            <!-- Move:<input type="range" min="-100" max="100" value="0" class="slider" id="move"> -->
+            Scale:<input type="range" min="-180" max="180" value="0" class="slider" id="scale">
+            RotateRobot:<input type="range" min="-180" max="180" value="0" class="slider" id="rotateRobot">
+            RotateObject:<input type="range" min="-180" max="180" value="0" class="slider" id="rotateObj">
+        </div>
+        <div id="textContainer">
+            w,a,s,d: move the robot
+            <br>
+            r,t : rotate the robot's claws
+            <br>
+            n,m : rotate the robot's 1st joint
+            <br>
+            o,p : rotate the robot's 2nd joint
+            <br>
+            j,k : rotate the robot's 3rd joint
+            <br>
+            1,2 to rotate the object's arm
+            <br>
+            3,4 to rotate the object's leg
+            <br>
+            g to grab and release the object
+            <br>
+            NOTE: In order to grab the object, touch the object's head with the outer claw
+        </div>
+    </body>
+</html>
+
+

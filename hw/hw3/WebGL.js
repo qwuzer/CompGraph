@@ -197,6 +197,15 @@ function popMatrix(mat){
     mdlMatrix = matStack.pop();
 }
 
+var objStack = [];
+function pushObj( mat ){
+  objStack.push(new Matrix4(mdlMatrix));
+}
+
+function popObj(mat){
+  mdlMatrix = objStack.pop();
+}
+
 
 async function main(){
     canvas = document.getElementById('webgl');
@@ -332,11 +341,11 @@ async function main(){
     canvas.onmouseup = function(ev){mouseUp(ev)};
     document.onkeydown = function(ev){keyDown(ev)};
 
-    var slider1 = document.getElementById("move");
-    slider1.oninput = function() {
-        moveDistance = this.value/60.0
-        draw();
-    }
+    // var slider1 = document.getElementById("move");
+    // slider1.oninput = function() {
+    //     moveDistance = this.value/60.0
+    //     draw();
+    // }
 
     var slider2 = document.getElementById("scale");
     slider2.oninput = function() {
@@ -533,13 +542,14 @@ function draw(){
     popMatrix();
 
     distance = Math.sqrt(Math.pow(clawCorner.elements[0] - objVer.elements[0], 2) + Math.pow(clawCorner.elements[1] - objVer.elements[1], 2) + Math.pow(clawCorner.elements[2] - objVer.elements[2], 2));
-    console.log(distance);  
+    // console.log(distance);  
 
     //object
     if( grab == 1 ){
         mdlMatrix.translate(0.0, -2.5, 0.0);
-        var objPos = new Vector4([0.0, 0.0, 0.0, 1.0]);
+        var objPos = new Vector4([0.4 * -2, 0.4 * 2, 0, 1.0, 1.0]);
         objVer = mdlMatrix.multiplyVector4(objPos);
+        pushObj();
         mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
         console.log(objVer.elements);
         pushMatrix();
@@ -548,10 +558,18 @@ function draw(){
         popMatrix();
     } else{
       if( distance < 0.8 ){
-          mdlMatrix.setIdentity();
-          mdlMatrix.translate(objVer.elements[0], objVer.elements[1], objVer.elements[2]);
-          
-          mdlMatrix.scale(0.4,0.4,0.4);
+          console.log("objstack length: " + objStack.length)
+          console.log("distance: " + distance)
+          if( objStack.length != 0){
+              console.log("pop");
+              popObj();
+              pushObj();
+          } else{
+              mdlMatrix.setIdentity();
+              mdlMatrix.translate(objVer.elements[0], objVer.elements[1], objVer.elements[2]);
+              mdlMatrix.scale(0.4,0.4,0.4);
+          }
+
           mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
           console.log(objVer.elements);
 
@@ -571,8 +589,10 @@ function draw(){
               popMatrix();
           } else {
               mdlMatrix.setIdentity();
-              mdlMatrix.translate(objVer.elements[0], objVer.elements[1], objVer.elements[2]);
-              mdlMatrix.scale(0.4, 0.4, 0.4);
+              // mdlMatrix.translate(objVer.elements[0], objVer.elements[1], objVer.elements[2]);
+              // mdlMatrix.scale(0.4, 0.4, 0.4);
+              popObj();
+              pushObj();
               mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
               pushMatrix();
               mdlMatrix.scale(0.5, 1, 0.5);
@@ -867,82 +887,82 @@ function keyDown(event){
     if( event.key == 'a' || event.key == 'A'){
         console.log('A')
         bodyXMove -= 0.1;
-        draw(gl)
+        draw()
     }else if ( event.key == 'd' || event.key == 'D'){
         console.log('D')
         bodyXMove += 0.1;
-        draw(gl)
+        draw()
     }else if ( event.key == 's' || event.key == 'S'){
         console.log('S')
         bodyYMove -= 0.1;
-        draw(gl)
+        draw()
     }else if ( event.key == 'w' || event.key == 'W'){
         console.log('W')
         bodyYMove += 0.1;
-        draw(gl)
+        draw()
     }else if ( event.key == 'r' || event.key == 'R'){ 
       console.log('R')
       if( clawOpenAngle < 20 ){
           clawOpenAngle += 10;
       }
-      draw(gl)
+      draw()
     }else if ( event.key == 't' || event.key == 'T'){ 
         console.log('T')
         if( clawOpenAngle > -20 ){
             clawOpenAngle -= 10;
         }
-        draw(gl)
+        draw()
     }else if ( event.key == 'n' || event.key == 'N'){ 
         console.log('N')
         armNode1Angle += 10;
-        draw(gl)
+        draw()
     }else if ( event.key == 'm' || event.key == 'M'){ 
         console.log('M')
         armNode1Angle -= 10;
-        draw(gl)
+        draw()
     }else if ( event.key == 'o' || event.key == 'O'){  
         console.log('O')
         armNode2Angle += 10;
-        draw(gl)
+        draw()
     }else if ( event.key == 'p' || event.key == 'P'){  
         console.log('P')
         armNode2Angle -= 10;
-        draw(gl)
+        draw()
     }else if ( event.key == 'j' || event.key == 'J'){  //rotate the second triangle
         console.log('J')
         armNode3Angle += 10;
-        draw(gl)
+        draw()
     }else if ( event.key == 'k' || event.key == 'K'){  //rotate the second triangle
         console.log('K')
         armNode3Angle -= 10;
-        draw(gl)
+        draw()
     }else if ( event.key == '1' ){  
         console.log('1')
         objAngle1 -= 10;
-        draw(gl)
+        draw()
     }else if ( event.key == '2'){  //rotate the second triangle
         console.log('2')
         objAngle1 += 10;
-        draw(gl)
+        draw()
     }else if ( event.key == '3' ){  
         console.log('3')
         objAngle2 -= 10;
-        draw(gl)
+        draw()
     }else if ( event.key == '4'){  //rotate the second triangle
         console.log('4')
         objAngle2 += 10;
-        draw(gl)
+        draw()
     }else if ( event.key == 'g' || event.key == 'G'){ //shorten the second triangle
       console.log('G')
       distance = Math.sqrt(Math.pow(clawCorner.elements[0] - objVer.elements[0], 2) + Math.pow(clawCorner.elements[1] - objVer.elements[1], 2) + Math.pow(clawCorner.elements[2] - objVer.elements[2], 2));
-      if( distance < 1.5 ){
+      if( distance < 0.8 ){
           if( grab == 0 || grab == 2 ){
               grab = 1;
           } else {
               grab = 0;
           }
       }
-      draw(gl)    
+      draw()    
   }
 
 
