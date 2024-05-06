@@ -182,10 +182,19 @@ var modelMatrix;
 var normalMatrix;
 var nVertex;
 var tire =  [];
+var pineapple = [];
+var lamp = [];
 var cube = [];
 var sphere = [];
 var moveDistance = 0;
 var rotateAngle1 = 0, rotateAngle2 = 0;
+
+
+var textures = {};
+var imgNames = ["woodmat_white.jpg"];
+var objCompImgIndex = ["woodmat_white.jpg", "woodmat_white.jpg", "woodmat_white.jpg", "woodmat_white.jpg"];
+var texCount = 0;
+var numTextures = imgNames.length;
 
 let mdlMatrix = new Matrix4(); //model matrix of objects
 var matStack = [];
@@ -231,7 +240,7 @@ async function main(){
     program.u_shininess = gl.getUniformLocation(program, 'u_shininess');
     program.u_Color = gl.getUniformLocation(program, 'u_Color'); 
 
-    /////3D model mario
+    /////3D model tires
     response = await fetch('tire.obj');
     text = await response.text();
     obj = parseOBJ(text);
@@ -241,6 +250,36 @@ async function main(){
                                           obj.geometries[i].data.normal, 
                                           obj.geometries[i].data.texcoord);
       tire.push(o);
+    }
+
+    /////3D model pineapples
+    response = await fetch('pineapple.obj');
+    text = await response.text();
+    obj = parseOBJ(text);
+    for( let i=0; i < obj.geometries.length; i ++ ){
+      let o = initVertexBufferForLaterUse(gl, 
+                                          obj.geometries[i].data.position,
+                                          obj.geometries[i].data.normal, 
+                                          obj.geometries[i].data.texcoord);
+      pineapple.push(o);
+    }
+
+    /////3D model lamp
+    response = await fetch('lamp.obj');
+    text = await response.text();
+    obj = parseOBJ(text);
+    for( let i=0; i < obj.geometries.length; i ++ ){
+      let o = initVertexBufferForLaterUse(gl, 
+                                          obj.geometries[i].data.position,
+                                          obj.geometries[i].data.normal, 
+                                          obj.geometries[i].data.texcoord);
+      lamp.push(o);
+    }
+
+    for( let i=0; i < imgNames.length; i ++ ){
+      let image = new Image();
+      image.onload = function(){initTexture(gl, image, imgNames[i]);};
+      image.src = imgNames[i];
     }
 
     ////cube
@@ -353,7 +392,6 @@ var objVer = new Vector4([0.4 * -2, 0.4 * 2, 0, 1.0]);
 var grab = 2; //grab: 1, not grab: -1, init: 2
 var distance = 0;
 
-
 /////Call drawOneObject() here to draw all object one by one 
 ////   (setup the model matrix and color to draw)
 function draw(){
@@ -366,6 +404,15 @@ function draw(){
     mdlMatrix.scale(4, 0.2, 4);
     drawOneObject(cube, mdlMatrix, 1.0, 0.4, 0.4);
 
+
+    //lamp
+    mdlMatrix.setIdentity();
+    mdlMatrix.translate(3, 0.4, -2);
+    mdlMatrix.rotate(270, 0, 1, 0); 
+    mdlMatrix.scale(0.05, 0.05, 0.05);
+    drawOneObjectModel(lamp, mdlMatrix, 0.0, 1.0, 0.0);
+
+
     //light
     mdlMatrix.setIdentity();
     mdlMatrix.translate(3, 3, 2);
@@ -377,7 +424,7 @@ function draw(){
     mdlMatrix.setIdentity();
     mdlMatrix.scale(0.4, 0.4, 0.4);
     mdlMatrix.rotate(rotateAngle1, 0, 1, 0);
-
+    
     mdlMatrix.translate(2.0 + bodyXMove, 2, 0 - bodyYMove);
     pushMatrix();
     mdlMatrix.scale(1, 1, 1);
@@ -389,28 +436,29 @@ function draw(){
     pushMatrix();//2
     pushMatrix();//3
     pushMatrix();//4
-    mdlMatrix.translate(1, -1, 1);
+    mdlMatrix.translate(1.2, -1.5, 1);
     pushMatrix();
-    mdlMatrix.scale(0.5, 0.5, 0.5);
-    drawOneObject(cube, mdlMatrix, 0.0 , 0.0, 0.0);
+    // mdlMatrix.rotate(bodyXMove * 100, 0, 1, 0);
+    mdlMatrix.scale(0.6, 0.6, 0.6);
+    drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
     popMatrix();
     popMatrix();//1
-    mdlMatrix.translate(1, -1, -1);
+    mdlMatrix.translate(1.2, -1.5, -1);
     pushMatrix();
-    mdlMatrix.scale(0.5, 0.5, 0.5);
-    drawOneObject(cube, mdlMatrix, 0.0 , 0.0, 0.0);
+    mdlMatrix.scale(0.6, 0.6, 0.6);
+    drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
     popMatrix();
     popMatrix();//2
-    mdlMatrix.translate(-1, -1, -1);
+    mdlMatrix.translate(-1.2, -1.5, -1);
     pushMatrix();
-    mdlMatrix.scale(0.5, 0.5, 0.5);
-    drawOneObject(cube, mdlMatrix, 0.0 , 0.0, 0.0);
+    mdlMatrix.scale(0.6, 0.6, 0.6);
+    drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
     popMatrix();
     popMatrix();//3
-    mdlMatrix.translate(-1, -1, 1);
+    mdlMatrix.translate(-1.2, -1.5, 1);
     pushMatrix();
-    mdlMatrix.scale(0.5, 0.5, 0.5);
-    drawOneObject(cube, mdlMatrix, 0.0 , 0.0, 0.0);
+    mdlMatrix.scale(0.6, 0.6, 0.6);
+    drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
     popMatrix();
     popMatrix();//4
     //tires
@@ -684,6 +732,52 @@ function drawOneObject(obj, mdlMatrix, colorR, colorG, colorB){
     }
 }
 
+function drawOneObjectModel(obj, mdlMatrix, colorR, colorG, colorB){
+  //model Matrix (part of the mvp matrix)
+  modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
+  modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
+  modelMatrix.multiply(mdlMatrix);
+  //mvp: projection * view * model matrix  
+  mvpMatrix.setPerspective(30, 1, 1, 100);
+  mvpMatrix.lookAt(cameraX , cameraY, cameraZ + scaleScene, 0, 0, 0, 0, 1, 0);
+  mvpMatrix.multiply(modelMatrix);
+
+  //normal matrix
+  normalMatrix.setInverseOf(modelMatrix);
+  normalMatrix.transpose();
+
+  gl.uniform3f(program.u_LightPosition, 3, 3, 2);
+  gl.uniform3f(program.u_ViewPosition, cameraX, cameraY, cameraZ);
+  gl.uniform1f(program.u_Ka, 0.2);
+  gl.uniform1f(program.u_Kd, 0.7);
+  gl.uniform1f(program.u_Ks, 1.0);
+  gl.uniform1f(program.u_shininess, 10.0);
+  gl.uniform3f(program.u_Color, colorR, colorG, colorB);
+
+
+  gl.uniformMatrix4fv(program.u_MvpMatrix, false, mvpMatrix.elements);
+  gl.uniformMatrix4fv(program.u_modelMatrix, false, modelMatrix.elements);
+  gl.uniformMatrix4fv(program.u_normalMatrix, false, normalMatrix.elements);
+
+  // for( let i=0; i < obj.length; i ++ ){
+  //   initAttributeVariable(gl, program.a_Position, obj[i].vertexBuffer);
+  //   initAttributeVariable(gl, program.a_Normal, obj[i].normalBuffer);
+  //   gl.drawArrays(gl.TRIANGLES, 0, obj[i].numVertices);
+  // }
+  for( let i=0; i < lamp.length; i ++ ){
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, textures[objCompImgIndex[i]]);
+    gl.uniform1i(program.u_Sampler, 0);
+
+    initAttributeVariable(gl, program.a_Position, lamp[i].vertexBuffer);
+    initAttributeVariable(gl, program.a_TexCoord, lamp[i].texCoordBuffer);
+    initAttributeVariable(gl, program.a_Normal, lamp[i].normalBuffer);
+
+    gl.drawArrays(gl.TRIANGLES, 0, lamp[i].numVertices);
+  }
+}
+
+
 function parseOBJ(text) {
   // because indices are base 1 let's just fill in the 0th data
   const objPositions = [[0, 0, 0]];
@@ -880,6 +974,10 @@ function keyDown(event){
         console.log('W')
         bodyYMove += 0.1;
         draw()
+    }else if ( (event.key == 'w' || event.key == 'W' ) && ( event.key == 'd' || event.key == 'D') ){
+        console.log('W+D')
+        bodyYMove += 0.1;
+        draw()
     }else if ( event.key == 'r' || event.key == 'R'){ 
       console.log('R')
       if( clawOpenAngle < 20 ){
@@ -947,4 +1045,26 @@ function keyDown(event){
 
 
     draw();
+}
+
+
+function initTexture(gl, img, imgName){
+  var tex = gl.createTexture();
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+
+  // Set the parameters so we can render any size image.
+  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  // Upload the image into the texture.
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+
+  textures[imgName] = tex;
+
+  texCount++;
+  if( texCount == numTextures)draw();
 }
