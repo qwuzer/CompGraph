@@ -156,6 +156,11 @@ var objCompImgIndex = ["d1419efe.jpg", "64124be4.jpg", "64124be4.jpg", "f1f6d3cb
                        "bab97353.jpg", "64124be4.jpg", "64124be4.jpg", "64124be4.jpg", 
                        "f1f6d3cb.jpg", "64124be4.jpg", "bab97353.jpg", "f1f6d3cb.jpg", 
                        "d1419efe.jpg"];
+
+// var imgNames = ["grey-concrete-texture.jpg"]
+// var objCompImgIndex = ["grey-concrete-texture.jpg" , "grey-concrete-texture.jpg", "grey-concrete-texture.jpg", "grey-concrete-texture.jpg",  "grey-concrete-texture.jpg", "grey-concrete-texture.jpg"];
+
+
 var texCount = 0;
 var numTextures = imgNames.length;
 
@@ -186,6 +191,7 @@ async function main(){
     program.u_Sampler = gl.getUniformLocation(program, "u_Sampler")
 
     response = await fetch('sonic.obj');
+    // response = await fetch('StreetLamp.obj');
     text = await response.text();
     obj = parseOBJ(text);
 

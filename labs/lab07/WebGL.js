@@ -238,6 +238,7 @@ async function main(){
       sonic.push(o);
     }
 
+
     ////cube
     //TODO-1: create vertices for the cube whose edge length is 2.0 (or 1.0 is also fine)
     //F: Face, T: Triangle, V: vertex (XYZ)

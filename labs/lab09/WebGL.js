@@ -271,6 +271,7 @@ async function main(){
     canvas.onmousedown = function(ev){mouseDown(ev)};
     canvas.onmousemove = function(ev){mouseMove(ev)};
     canvas.onmouseup = function(ev){mouseUp(ev)};
+    // document.onkeydown = function(ev){keydown(ev)};
     var menu = document.getElementById("menu");
     menu.onchange = function() {
         if(this.value == "normal") normalMode = true;
@@ -597,3 +598,26 @@ function initFrameBuffer(gl){
   return frameBuffer;
 }
 
+
+function keydown(ev){ 
+  //implment keydown event here
+  let rotateMatrix = new Matrix4();
+  rotateMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
+  rotateMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
+  var viewDir= new Vector3([cameraDirX, cameraDirY, cameraDirZ]);
+  var newViewDir = rotateMatrix.multiplyVector3(viewDir);
+
+  if(ev.key == 'w'){ 
+      cameraX += (newViewDir.elements[0] * 0.1);
+      cameraY += (newViewDir.elements[1] * 0.1);
+      cameraZ += (newViewDir.elements[2] * 0.1);
+  }
+  else if(ev.key == 's'){ 
+    cameraX -= (newViewDir.elements[0] * 0.1);
+    cameraY -= (newViewDir.elements[1] * 0.1);
+    cameraZ -= (newViewDir.elements[2] * 0.1);
+  }
+
+  console.log(cameraX, cameraY, cameraZ)
+  draw();
+}
