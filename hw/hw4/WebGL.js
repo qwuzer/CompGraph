@@ -211,13 +211,10 @@ var modelMatrix;
 var normalMatrix;
 var nVertex;
 
-var offScreenWidth = 2048, offScreenHeight = 2048;
-var fbo;
+
 var rotateAngle = 0;
 var normalMode = true;
 var quadObj;
-
-
 
 var textures = {};
 var texCount = 0;
@@ -308,304 +305,6 @@ var clawCorner = new Vector4([0.0, 0.0, 0.0, 1.0]);
 var objVer = new Vector4([0.4 * -2, 0.4 * 2, 0, 1.0]);
 var grab = 2; //grab: 1, not grab: -1, init: 2
 var distance = 0;
-// function draw(){
-//     //Cube (ground)
-//     //TODO-1: set mdlMatrix for the cube
-//     mdlMatrix.setIdentity();
-//     mdlMatrix.scale(4, 0.2, 4);
-//     drawOneObject(cube, mdlMatrix, 1.0, 0.4, 0.4);
-
-//     //light
-//     mdlMatrix.setIdentity();
-//     mdlMatrix.translate(3, 3, 2);
-//     mdlMatrix.scale(0.1, 0.1, 0.1);
-//     drawOneObject(cube, mdlMatrix, 1, 1, 1);
-
-
-//     //football
-//     mdlMatrix.setIdentity();
-//     mdlMatrix.translate(1, 1, 1);
-//     mdlMatrix.scale(2, 2,2);
-//     drawOneObject(football, mdlMatrix, 1, 1, 1);
-
-
-//     //robot
-//     mdlMatrix.setIdentity();
-//     mdlMatrix.scale(0.4, 0.4, 0.4);
-//     mdlMatrix.rotate(rotateAngle1, 0, 1, 0);
-    
-//     mdlMatrix.translate(2.0 + bodyXMove, 2, 0 - bodyYMove);
-//     pushMatrix();
-//     mdlMatrix.scale(1, 1, 1);
-//     drawOneObject(cube, mdlMatrix, 0.0 , 0.4, 0.0);
-//     popMatrix();
-
-//     //#region ------------------------ tires ------------------------ 
-//     pushMatrix();//1
-//     pushMatrix();//2
-//     pushMatrix();//3
-//     pushMatrix();//4
-//     mdlMatrix.translate(1.2, -1.5, 1);
-//     pushMatrix();
-//     // mdlMatrix.rotate(bodyXMove * 100, 0, 1, 0);
-//     mdlMatrix.scale(0.6, 0.6, 0.6);
-//     drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
-//     popMatrix();
-//     popMatrix();//1
-//     mdlMatrix.translate(1.2, -1.5, -1);
-//     pushMatrix();
-//     mdlMatrix.scale(0.6, 0.6, 0.6);
-//     drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
-//     popMatrix();
-//     popMatrix();//2
-//     mdlMatrix.translate(-1.2, -1.5, -1);
-//     pushMatrix();
-//     mdlMatrix.scale(0.6, 0.6, 0.6);
-//     drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
-//     popMatrix();
-//     popMatrix();//3
-//     mdlMatrix.translate(-1.2, -1.5, 1);
-//     pushMatrix();
-//     mdlMatrix.scale(0.6, 0.6, 0.6);
-//     drawOneObject(tire, mdlMatrix, 0.0, 0.0, 0.0);
-//     popMatrix();
-//     popMatrix();//4
-//     //#endregion ------------------------ tires ------------------------ 
-
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.translate(0, 2.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 2.5, 0.2);
-//     drawOneObject(cube, mdlMatrix, 0.4, 0.4, 0.4);
-//     popMatrix();
-
-//     mdlMatrix.translate(0, 2.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.23, 0.23, 0.23);
-//     drawOneObject(cube, mdlMatrix, 1.0, 0.4, 0.4);
-//     popMatrix();
-    
-//     mdlMatrix.rotate(armNode1Angle + 45, 0, 0, 1);
-//     mdlMatrix.translate(0, 1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 0.4, 0.4, 0.4);
-//     popMatrix();  
-
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.rotate(armNode2Angle + 90, 0, 0, 1);
-//     mdlMatrix.translate(0, 1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 0.4, 0.4, 0.4);
-//     popMatrix();
-
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.rotate(armNode3Angle + 45, 0, 0, 1);
-//     mdlMatrix.translate(0, 0.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 0.5, 0.2);
-//     drawOneObject(cube, mdlMatrix, 0.4, 0.4, 0.4);
-//     popMatrix();
-
-//     var ccl = 0.5;//claw cube length
-//     mdlMatrix.translate(0, 0.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(ccl, ccl, ccl);
-//     drawOneObject(cube, mdlMatrix, 1.0, 1.0, 1.0);
-//     popMatrix();
-
-
-//     //#region ------------------------ claws ------------------------ 
-//     //right claw
-//     pushMatrix();
-//     pushMatrix();
-//     pushMatrix();
-//     mdlMatrix.translate(0, -ccl, 0);
-//     mdlMatrix.rotate(45 + clawOpenAngle, 0, 0, 1);
-//     mdlMatrix.translate(0, 1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     popMatrix();
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.rotate(135 + clawOpenAngle, 0, 0, 1);
-//     mdlMatrix.translate(0, -0.5, 0);
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     //left claw
-//     popMatrix();
-//     mdlMatrix.translate(0, -ccl, 0);
-//     mdlMatrix.rotate(-45 - clawOpenAngle, 0, 0, 1);
-//     mdlMatrix.translate(0, 1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     popMatrix();
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.rotate(-135 - clawOpenAngle, 0, 0, 1);
-//     mdlMatrix.translate(0, -0.5, 0);
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     //inner claw
-//     popMatrix();
-//     mdlMatrix.translate(0, -ccl, 0);
-//     mdlMatrix.rotate(-45 - clawOpenAngle, 1, 0, 0);
-//     mdlMatrix.translate(0, 1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     popMatrix();
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.rotate(-135 - clawOpenAngle, 1, 0, 0);
-//     mdlMatrix.translate(0, -0.5, 0);
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     //outer claw
-//     popMatrix();
-//     mdlMatrix.translate(0, -ccl, 0);
-//     mdlMatrix.rotate(45 + clawOpenAngle, 1, 0, 0);
-//     mdlMatrix.translate(0, 1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     popMatrix();
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.rotate(135 + clawOpenAngle, 1, 0, 0);
-//     mdlMatrix.translate(0, -0.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.2, 1, 0.2);
-//     drawOneObject(cube, mdlMatrix, 1,0, 1.0, 0.0);
-//     var clawCornerPos  =  new Vector4([-1, -1, -0.5, 1.0]);
-//     clawCorner = mdlMatrix.multiplyVector4(clawCornerPos);
-//     popMatrix();
-//     //#endregion ------------------------ claws ------------------------
-
-//     distance = Math.sqrt(Math.pow(clawCorner.elements[0] - objVer.elements[0], 2) + Math.pow(clawCorner.elements[1] - objVer.elements[1], 2) + Math.pow(clawCorner.elements[2] - objVer.elements[2], 2));
-//     // console.log(distance);  
-
-//     //object
-//     if( grab == 1 ){
-//         mdlMatrix.translate(0.0, -2.5, 0.0);
-//         var objPos = new Vector4([0.4 * -2, 0.4 * 2, 0, 1.0, 1.0]);
-//         objVer = mdlMatrix.multiplyVector4(objPos);
-//         pushObj();
-//         mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
-//         console.log(objVer.elements);
-//         pushMatrix();
-//         mdlMatrix.scale(0.5, 1, 0.5);
-//         drawOneObject(cube, mdlMatrix, 0.0, 0.0, 1.0);
-//         popMatrix();
-//     } else{
-//       if( distance < 0.8 ){
-//           console.log("objstack length: " + objStack.length)
-//           console.log("distance: " + distance)
-//           if( objStack.length != 0){
-//               console.log("pop");
-//               popObj();
-//               pushObj();
-//           } else{
-//               mdlMatrix.setIdentity();
-//               mdlMatrix.translate(objVer.elements[0], objVer.elements[1], objVer.elements[2]);
-//               // mdlMatrix.scale(0.4,0.4,0.4);
-//           }
-
-//           mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
-//           console.log(objVer.elements);
-
-//           pushMatrix();
-//           mdlMatrix.scale(0.5, 1, 0.5);
-//           drawOneObject(cube, mdlMatrix, 0.0, 0.0, 1.0);
-//           popMatrix();  
-//       } else {
-//           if( grab == 2 ){
-//               mdlMatrix.setIdentity();
-//               mdlMatrix.scale(0.4, 0.4, 0.4);
-//               mdlMatrix.translate(-2, 2, 0);
-//               mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
-//               pushMatrix();
-//               mdlMatrix.scale(0.5, 1, 0.5);
-//               drawOneObject(cube, mdlMatrix, 0.0, 0.0, 1.0);
-//               popMatrix();
-//           } else {
-//               mdlMatrix.setIdentity();
-//               // mdlMatrix.translate(objVer.elements[0], objVer.elements[1], objVer.elements[2]);
-//               // mdlMatrix.scale(0.4, 0.4, 0.4);
-//               popObj();
-//               pushObj();
-//               mdlMatrix.rotate(rotateAngle2, 0, 1, 0);
-//               pushMatrix();
-//               mdlMatrix.scale(0.5, 1, 0.5);
-//               drawOneObject(cube, mdlMatrix, 0.0, 0.0, 1.0);
-//               popMatrix();
-//           }
-//       }
-//     }
-
-//     // pushMatrix();
-//     pushMatrix();
-//     pushMatrix();
-//     pushMatrix();
-//     pushMatrix();
-//     //head
-//     mdlMatrix.translate(0, 1, 0);
-//     mdlMatrix.translate(0, 0.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.5, 0.5, 0.5);
-//     if(grab == 1){
-//         drawOneObject(cube, mdlMatrix, 1.0, 0.0, 0.0);
-//     } else {
-//         if(distance < 0.8 ){
-//             drawOneObject(cube, mdlMatrix, 0.0, 1.0, 0.0);
-//         } else {
-//             if(grab == 2){
-//               drawOneObject(cube, mdlMatrix, 0.7, 0.4, 1.0);
-//             } else {
-//               drawOneObject(cube, mdlMatrix, 0.7, 0.4, 1.0);
-//             }
-//         }
-//     }
-//     popMatrix();
-
-//     popMatrix();
-//     mdlMatrix.translate(0, -1, -0.05);
-//     mdlMatrix.rotate(45 + objAngle2 , 0, 0, 1);
-//     mdlMatrix.translate(0, -0.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.25, 0.5, 0.25);
-//     drawOneObject(cube, mdlMatrix, 1.0, 0.0, 1.0);
-//     popMatrix();
-
-//     popMatrix();
-//     mdlMatrix.translate(0, -1, -0.05);
-//     mdlMatrix.rotate(-45 - objAngle2 , 0, 0, 1);
-//     mdlMatrix.translate(0, -0.5, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.25, 0.5, 0.25);
-//     drawOneObject(cube, mdlMatrix, 1.0, 0.0, 1.0);
-//     popMatrix();
-
-//     popMatrix();
-//     mdlMatrix.translate(0, 1, -0.05);
-//     mdlMatrix.rotate(45 + objAngle1, 0, 0, 1);
-//     mdlMatrix.translate(0, -1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.25, 0.5, 0.25);
-//     drawOneObject(cube, mdlMatrix, 1.0, 0.0, 1.0);
-//     popMatrix();
-
-//     popMatrix();
-//     mdlMatrix.translate(0, 1, -0.05);
-//     mdlMatrix.rotate(-45 - objAngle1 , 0, 0, 1);
-//     mdlMatrix.translate(0, -1, 0);
-//     pushMatrix();
-//     mdlMatrix.scale(0.25, 0.5, 0.25);
-//     drawOneObject(cube, mdlMatrix, 1.0, 0.0, 1.0);
-//     popMatrix();
-
-// }
-
-
 
 async function load_one_model(file_path) {
   obj_data = [];
@@ -706,8 +405,13 @@ function drawOneObject(
   obj, mdlMatrix,colorR, colorG, colorB
 ){
     //model Matrix (part of the mvp matrix)
-    modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
-    modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
+    if( colorR == 1.0 && colorG == 1.0 && colorB == 0.0){
+        modelMatrix.setIdentity();
+    } else{
+      modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
+      modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
+    }
+   
     modelMatrix.multiply(mdlMatrix);
     //mvp: projection * view * model matrix  
     mvpMatrix.setPerspective(30, 1, 1, 100);
@@ -1158,7 +862,6 @@ function keyDown(event){
         draw_all()
     }else if ( event.key == 'w' || event.key == 'W'){
         console.log('W')
-        // bodyYMove += 0.1;
         cameraX -= newViewDir.elements[0] * 0.02;
         cameraY -= newViewDir.elements[1] * 0.02;
         cameraZ -= newViewDir.elements[2] * 0.02;

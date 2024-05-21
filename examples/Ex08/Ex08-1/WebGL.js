@@ -147,8 +147,8 @@ var mvpMatrix;
 var modelMatrix;
 var normalMatrix;
 var nVertex;
-var cameraX = 3, cameraY = 3, cameraZ = 7;
-var objScale = 1.00;
+var cameraX = 3, cameraY = 3, cameraZ = 10;
+var objScale = 2;
 var objComponents = [];
 var textures = {};
 var texCount = 0;
@@ -434,7 +434,10 @@ function initTexture(gl, img, texKey){
 
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
   // Set the parameters so we can render any size image.
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  
   // Upload the image into the texture.
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 

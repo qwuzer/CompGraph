@@ -5,6 +5,8 @@ var VSHADER_SOURCE = `
     uniform mat4 u_MvpMatrix;
     uniform mat4 u_modelMatrix;
     uniform mat4 u_normalMatrix;
+    uniform bool u_RepeatTexture; // New uniform flag
+
     varying vec3 v_Normal;
     varying vec3 v_PositionInWorld;
     varying vec2 v_TexCoord;
@@ -12,7 +14,12 @@ var VSHADER_SOURCE = `
         gl_Position = u_MvpMatrix * a_Position;
         v_PositionInWorld = (u_modelMatrix * a_Position).xyz; 
         v_Normal = normalize(vec3(u_normalMatrix * a_Normal));
-        v_TexCoord = a_TexCoord;
+        // v_TexCoord = a_TexCoord;
+        if (u_RepeatTexture) {
+          v_TexCoord = a_TexCoord * vec2(4.0, 4.0); // Repeat factor
+        } else {
+          v_TexCoord = a_TexCoord;
+        }
     }    
 `;
 
@@ -257,6 +264,12 @@ function draw(){
     gl.bindTexture(gl.TEXTURE_2D, textures["webGLTex"]);
 
     for( let i=0; i < objComponents.length; i ++ ){
+      const component = objComponents[i];
+      console.log(component.geometry);
+      // const shouldRepeatTexture = component.object.startsWith('repeat_');
+
+      // gl.uniform1i(program.u_RepeatTexture, shouldRepeatTexture);
+
       initAttributeVariable(gl, program.a_Position, objComponents[i].vertexBuffer);
       initAttributeVariable(gl, program.a_TexCoord, objComponents[i].texCoordBuffer);
       initAttributeVariable(gl, program.a_Normal, objComponents[i].normalBuffer);
@@ -264,20 +277,171 @@ function draw(){
     }
 }
 
+// function parseOBJ(text) {
+//   // because indices are base 1 let's just fill in the 0th data
+//   const objPositions = [[0, 0, 0]];
+//   const objTexcoords = [[0, 0]];
+//   const objNormals = [[0, 0, 0]];
+
+//   // same order as `f` indices
+//   const objVertexData = [
+//     objPositions,
+//     objTexcoords,
+//     objNormals,
+//   ];
+
+//   // same order as `f` indices
+//   let webglVertexData = [
+//     [],   // positions
+//     [],   // texcoords
+//     [],   // normals
+//   ];
+
+//   const materialLibs = [];
+//   const geometries = [];
+//   let geometry;
+//   let groups = ['default'];
+//   let material = 'default';
+//   let object = 'default';
+
+//   const noop = () => {};
+
+//   function newGeometry() {
+//     // If there is an existing geometry and it's
+//     // not empty then start a new one.
+//     if (geometry && geometry.data.position.length) {
+//       geometry = undefined;
+//     }
+//   }
+
+//   function setGeometry() {
+//     if (!geometry) {
+//       const position = [];
+//       const texcoord = [];
+//       const normal = [];
+//       webglVertexData = [
+//         position,
+//         texcoord,
+//         normal,
+//       ];
+//       geometry = {
+//         object,
+//         groups,
+//         material,
+//         data: {
+//           position,
+//           texcoord,
+//           normal,
+//         },
+//       };
+//       geometries.push(geometry);
+//     }
+//   }
+
+//   function addVertex(vert) {
+//     const ptn = vert.split('/');
+//     ptn.forEach((objIndexStr, i) => {
+//       if (!objIndexStr) {
+//         return;
+//       }
+//       const objIndex = parseInt(objIndexStr);
+//       const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i].length);
+//       // webglVertexData[i].push(...objVertexData[i][index]);
+//       if (i === 1) { // Texture coordinates
+//         // Scale UV coordinates to repeat texture
+//         const scaleU = 4.0; // Repeat 4 times horizontally
+//         const scaleV = 4.0; // Repeat 4 times vertically
+//         const texcoord = objVertexData[i][index].map((coord, idx) => idx === 0 ? coord * scaleU : coord * scaleV);
+//         webglVertexData[i].push(...texcoord);
+//       } else {
+//         webglVertexData[i].push(...objVertexData[i][index]);
+//       }
+//     });
+//   }
+
+//   const keywords = {
+//     v(parts) {
+//       objPositions.push(parts.map(parseFloat));
+//     },
+//     vn(parts) {
+//       objNormals.push(parts.map(parseFloat));
+//     },
+//     vt(parts) {
+//       // should check for missing v and extra w?
+//       objTexcoords.push(parts.map(parseFloat));
+//     },
+//     f(parts) {
+//       setGeometry();
+//       const numTriangles = parts.length - 2;
+//       for (let tri = 0; tri < numTriangles; ++tri) {
+//         addVertex(parts[0]);
+//         addVertex(parts[tri + 1]);
+//         addVertex(parts[tri + 2]);
+//       }
+//     },
+//     s: noop,    // smoothing group
+//     mtllib(parts, unparsedArgs) {
+//       // the spec says there can be multiple filenames here
+//       // but many exist with spaces in a single filename
+//       materialLibs.push(unparsedArgs);
+//     },
+//     usemtl(parts, unparsedArgs) {
+//       material = unparsedArgs;
+//       newGeometry();
+//     },
+//     g(parts) {
+//       groups = parts;
+//       newGeometry();
+//     },
+//     o(parts, unparsedArgs) {
+//       object = unparsedArgs;
+//       newGeometry();
+//     },
+//   };
+
+//   const keywordRE = /(\w*)(?: )*(.*)/;
+//   const lines = text.split('\n');
+//   for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
+//     const line = lines[lineNo].trim();
+//     if (line === '' || line.startsWith('#')) {
+//       continue;
+//     }
+//     const m = keywordRE.exec(line);
+//     if (!m) {
+//       continue;
+//     }
+//     const [, keyword, unparsedArgs] = m;
+//     const parts = line.split(/\s+/).slice(1);
+//     const handler = keywords[keyword];
+//     if (!handler) {
+//       console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
+//       continue;
+//     }
+//     handler(parts, unparsedArgs);
+//   }
+
+//   // remove any arrays that have no entries.
+//   for (const geometry of geometries) {
+//     geometry.data = Object.fromEntries(
+//         Object.entries(geometry.data).filter(([, array]) => array.length > 0));
+//   }
+
+//   return {
+//     geometries,
+//     materialLibs,
+//   };
+// }
 function parseOBJ(text) {
-  // because indices are base 1 let's just fill in the 0th data
   const objPositions = [[0, 0, 0]];
   const objTexcoords = [[0, 0]];
   const objNormals = [[0, 0, 0]];
 
-  // same order as `f` indices
   const objVertexData = [
     objPositions,
     objTexcoords,
     objNormals,
   ];
 
-  // same order as `f` indices
   let webglVertexData = [
     [],   // positions
     [],   // texcoords
@@ -290,12 +454,11 @@ function parseOBJ(text) {
   let groups = ['default'];
   let material = 'default';
   let object = 'default';
+  let repeatTexture = false; // Add a flag for repeating texture
 
   const noop = () => {};
 
   function newGeometry() {
-    // If there is an existing geometry and it's
-    // not empty then start a new one.
     if (geometry && geometry.data.position.length) {
       geometry = undefined;
     }
@@ -333,7 +496,18 @@ function parseOBJ(text) {
       }
       const objIndex = parseInt(objIndexStr);
       const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i].length);
-      webglVertexData[i].push(...objVertexData[i][index]);
+      if (i === 1) { // Texture coordinates
+        const texcoord = objVertexData[i][index].slice(); // Copy texcoord
+        if (repeatTexture) {
+          const scaleU = 4.0; // Repeat factor for U
+          const scaleV = 4.0; // Repeat factor for V
+          texcoord[0] *= scaleU;
+          texcoord[1] *= scaleV;
+        }
+        webglVertexData[i].push(...texcoord);
+      } else {
+        webglVertexData[i].push(...objVertexData[i][index]);
+      }
     });
   }
 
@@ -345,7 +519,6 @@ function parseOBJ(text) {
       objNormals.push(parts.map(parseFloat));
     },
     vt(parts) {
-      // should check for missing v and extra w?
       objTexcoords.push(parts.map(parseFloat));
     },
     f(parts) {
@@ -357,10 +530,8 @@ function parseOBJ(text) {
         addVertex(parts[tri + 2]);
       }
     },
-    s: noop,    // smoothing group
+    s: noop,
     mtllib(parts, unparsedArgs) {
-      // the spec says there can be multiple filenames here
-      // but many exist with spaces in a single filename
       materialLibs.push(unparsedArgs);
     },
     usemtl(parts, unparsedArgs) {
@@ -373,6 +544,7 @@ function parseOBJ(text) {
     },
     o(parts, unparsedArgs) {
       object = unparsedArgs;
+      repeatTexture = object.startsWith('repeat_'); // Check if object should use repeated texture
       newGeometry();
     },
   };
@@ -392,16 +564,16 @@ function parseOBJ(text) {
     const parts = line.split(/\s+/).slice(1);
     const handler = keywords[keyword];
     if (!handler) {
-      console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
+      console.warn('unhandled keyword:', keyword);
       continue;
     }
     handler(parts, unparsedArgs);
   }
 
-  // remove any arrays that have no entries.
   for (const geometry of geometries) {
     geometry.data = Object.fromEntries(
-        Object.entries(geometry.data).filter(([, array]) => array.length > 0));
+      Object.entries(geometry.data).filter(([, array]) => array.length > 0)
+    );
   }
 
   return {
@@ -409,6 +581,7 @@ function parseOBJ(text) {
     materialLibs,
   };
 }
+
 
 function mouseDown(ev){ 
     var x = ev.clientX;
@@ -449,6 +622,8 @@ function initTexture(gl, img, texKey){
 
   // Set the parameters so we can render any size image.
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   
   // Upload the image into the texture.
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
