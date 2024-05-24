@@ -8,6 +8,7 @@ var VSHADER_SOURCE = `
     varying vec3 v_Normal;
     varying vec3 v_PositionInWorld;
     varying vec2 v_TexCoord;
+    
     void main(){
         gl_Position = u_MvpMatrix * a_Position;
         v_PositionInWorld = (u_modelMatrix * a_Position).xyz; 

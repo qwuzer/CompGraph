@@ -26,16 +26,15 @@ var offScreenWidth = 800,
 var birdX = 0 , birdY = 2, birdZ = 0;
 var isFlapping = false;
 var birdYoffset = 0;
-var birdYMove = -0.015
-
+var birdYMove = -0.015;
 
 //pillar
 var pillarX = 0, pillarY = 0, pillarZ = 0;
 var pipeXoffset = 0;
-var pipeXMove = -0.01;
-//pillar movement 
+var pipeXoffset2 = 15;
+var pipeXMove = -0.07;
 
-
+var first = true;
 
 async function main(){
     canvas = document.getElementById('webgl');
@@ -95,7 +94,8 @@ async function main(){
     program.u_Ks = gl.getUniformLocation(program, 'u_Ks');
     program.u_shininess = gl.getUniformLocation(program, 'u_shininess');
     program.u_Color = gl.getUniformLocation(program, 'u_Color'); 
-    
+    program.u_textureScale = gl.getUniformLocation(program, 'u_textureScale');
+    gl.uniform1f(program.u_textureScale, 1.0);
 
     mvpMatrix = new Matrix4();
     modelMatrix = new Matrix4();
@@ -110,8 +110,7 @@ async function main(){
     draw_all();
     interface();
 
-    
-
+  
     var tick = function(){
         
         if( birdYoffset < -3 ){
@@ -122,11 +121,24 @@ async function main(){
         }
 
         
-        if( pipeXoffset < -3 ){
-            pipeXoffset = 0;
-        } else{ 
-            pipeXoffset += pipeXMove;
+        if( pipeXoffset < -30 ){
+          pipeXoffset = 0;
+        } 
+
+        if( first ){
+          if( pipeXoffset2 < -30 ){
+            pipeXoffset2 = 0;
+            first = false;
+          }
+        } else {
+          if( pipeXoffset2 < -30 ){
+            pipeXoffset2 = 0;
+          }
         }
+
+        // pipeXoffset += pipeXMove;
+        // pipeXoffset2 += pipeXMove;
+        
 
         draw_all();
         requestAnimationFrame(tick);

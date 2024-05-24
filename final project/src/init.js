@@ -7,6 +7,7 @@ function initTexture(gl, img, imgName){
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     // Set the parameters so we can render any size image.
     if(imgName == "groundTex"){
+      // gl.uniform1i(u_textureScale, 10);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
@@ -14,6 +15,8 @@ function initTexture(gl, img, imgName){
       console.log("gndTex")  
     } else {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP);
     }
     
     // Upload the image into the texture.
@@ -174,16 +177,16 @@ function initTexture(gl, img, imgName){
         }
         const objIndex = parseInt(objIndexStr);
         const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i].length);
-        // webglVertexData[i].push(...objVertexData[i][index]);
-        if (i === 1) { // Texture coordinates
-          // Scale UV coordinates to repeat texture
-          const scaleU = 4.0; // Repeat 4 times horizontally
-          const scaleV = 4.0; // Repeat 4 times vertically
-          const texcoord = objVertexData[i][index].map((coord, idx) => idx === 0 ? coord * scaleU : coord * scaleV);
-          webglVertexData[i].push(...texcoord);
-        } else {
-          webglVertexData[i].push(...objVertexData[i][index]);
-        }
+        webglVertexData[i].push(...objVertexData[i][index]);
+        // if (i === 1) { // Texture coordinates
+        //   // Scale UV coordinates to repeat texture
+        //   const scaleU = 4.0; // Repeat 4 times horizontally
+        //   const scaleV = 4.0; // Repeat 4 times vertically
+        //   const texcoord = objVertexData[i][index].map((coord, idx) => idx === 0 ? coord * scaleU : coord * scaleV);
+        //   webglVertexData[i].push(...texcoord);
+        // } else {
+        //   webglVertexData[i].push(...objVertexData[i][index]);
+        // }
       });
     }
   

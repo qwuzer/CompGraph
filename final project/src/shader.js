@@ -8,11 +8,12 @@ var VSHADER_SOURCE = `
     varying vec3 v_Normal;
     varying vec3 v_PositionInWorld;
     varying vec2 v_TexCoord;
+    uniform float u_textureScale; //scale for texture, used for repeating texture
     void main(){
       gl_Position = u_MvpMatrix * a_Position;
       v_PositionInWorld = (u_modelMatrix * a_Position).xyz; 
       v_Normal = normalize(vec3(u_normalMatrix * a_Normal));
-      v_TexCoord = a_TexCoord;
+      v_TexCoord = a_TexCoord * u_textureScale;
     }    
 `;
 var FSHADER_SOURCE = `
