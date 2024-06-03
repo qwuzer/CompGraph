@@ -558,7 +558,7 @@ function draw(){
         popMatrix();
     } else{
       if( distance < 0.8 ){
-          console.log("objstack length: " + objStack.length)
+          console.log("objstack length:" + objStack.length)
           console.log("distance: " + distance)
           if( objStack.length != 0){
               console.log("pop");

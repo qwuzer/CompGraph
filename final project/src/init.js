@@ -4,7 +4,7 @@ function initTexture(gl, img, imgName){
     // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     gl.bindTexture(gl.TEXTURE_2D, tex);
   
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     // Set the parameters so we can render any size image.
     if(imgName == "groundTex"){
       // gl.uniform1i(u_textureScale, 10);

@@ -6,6 +6,8 @@ var VSHADER_SOURCE = `
     uniform mat4 u_modelMatrix;
     uniform mat4 u_normalMatrix;
     varying vec3 v_Normal;
+    uniform mat4 u_MvpMatrixOfLight;
+    varying vec4 v_PositionFromLight;
     varying vec3 v_PositionInWorld;
     varying vec2 v_TexCoord;
     uniform float u_textureScale; //scale for texture, used for repeating texture
@@ -14,6 +16,7 @@ var VSHADER_SOURCE = `
       v_PositionInWorld = (u_modelMatrix * a_Position).xyz; 
       v_Normal = normalize(vec3(u_normalMatrix * a_Normal));
       v_TexCoord = a_TexCoord * u_textureScale;
+      v_PositionFromLight = u_MvpMatrixOfLight * a_Position; //for shadow
     }    
 `;
 var FSHADER_SOURCE = `
@@ -25,22 +28,20 @@ var FSHADER_SOURCE = `
     uniform float u_Ks;
     uniform float u_shininess;
     uniform sampler2D u_Sampler;
+    uniform sampler2D u_ShadowMap;
     uniform vec3 u_Color;
     varying vec3 v_Normal;
     varying vec3 v_PositionInWorld;
     varying vec2 v_TexCoord;
+    varying vec4 v_PositionFromLight;
+    const float deMachThreshold = 0.005; //0.001 if having high precision depth
     void main(){
         vec3 texColor = texture2D( u_Sampler, v_TexCoord ).rgb;
 
         if( u_Color != vec3(0.0, 0.0, 0.0) ){
           texColor = u_Color;
         }
-        // if(texColor == vec3(0.0, 0.0, 0.0)) {
-        //   texColor = u_Color;
-        // }
 
-        // vec3 ambientLightColor = u_Color;
-        // vec3 diffuseLightColor = u_Color;
         vec3 ambientLightColor = texColor;
         vec3 diffuseLightColor = texColor;
         vec3 specularLightColor = vec3(1.0, 1.0, 1.0);        
@@ -61,7 +62,15 @@ var FSHADER_SOURCE = `
             specular = u_Ks * pow(specAngle, u_shininess) * specularLightColor; 
         }
 
-        gl_FragColor = vec4( ambient + diffuse + specular, 1.0 );
+        //shadow
+        vec3 shadowCoord = (v_PositionFromLight.xyz/v_PositionFromLight.w)/2.0 + 0.5;
+        vec4 rgbaDepth = texture2D(u_ShadowMap, shadowCoord.xy);
+        /////////******** LOW precision depth implementation ********///////////
+        float depth = rgbaDepth.r;
+        float visibility = (shadowCoord.z > depth + deMachThreshold) ? 0.3 : 1.0;
+
+        gl_FragColor = vec4( (ambient + diffuse + specular)*visibility, 1.0);
+          // gl_FragColor = vec4( ambient + diffuse + specular, 1.0 );
     }
 `;
 
@@ -84,3 +93,20 @@ var FSHADER_SOURCE_ENVCUBE = `
     gl_FragColor = textureCube(u_envCubeMap, normalize(t.xyz / t.w));
   }
 `;
+
+
+var VSHADER_SHADOW_SOURCE = `
+      attribute vec4 a_Position;
+      uniform mat4 u_MvpMatrix;
+      void main(){
+          gl_Position = u_MvpMatrix * a_Position;
+      }
+  `;
+
+var FSHADER_SHADOW_SOURCE = `
+      precision mediump float;
+      void main(){
+        /////////** LOW precision depth implementation **/////
+        gl_FragColor = vec4(gl_FragCoord.z, gl_FragCoord.z, gl_FragCoord.z, 1.0);
+      }
+  `;

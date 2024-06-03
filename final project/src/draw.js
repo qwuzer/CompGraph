@@ -3,6 +3,7 @@ let tire = [];
 let soccer = [];
 let sphere = [];
 let pipe = [];
+let boo = [];
 
 async function load_all_model() {
     cube = await load_one_model("./object/cube.obj");
@@ -10,6 +11,7 @@ async function load_all_model() {
     soccer = await load_one_model("./object/soccer.obj");
     sphere = await load_one_model("./object/sphere.obj");
     pipe = await load_one_model("./object/pipe.obj");
+    boo = await load_one_model("./object/boo.obj");
 }
 
 
@@ -38,17 +40,89 @@ var pipeMatrix18 = new Matrix4();
 var pipeMatrix19 = new Matrix4();
 var pipeMatrix20 = new Matrix4();
 
+//long part of the pipe, I am def going to regret this naming convention ==
+var pipeBottom = new Matrix4();
+var pipe2Bottom = new Matrix4();
+var pipe3Bottom = new Matrix4();
+var pipe4Bottom = new Matrix4();
+var pipe5Bottom = new Matrix4();
+var pipe6Bottom = new Matrix4();
+var pipe7Bottom = new Matrix4();
+var pipe8Bottom = new Matrix4();
+var pipe9Bottom = new Matrix4();
+var pipe10Bottom = new Matrix4();
+var pipe11Bottom = new Matrix4();
+var pipe12Bottom = new Matrix4();
+var pipe13Bottom = new Matrix4();
+var pipe14Bottom = new Matrix4();
+var pipe15Bottom = new Matrix4();
+var pipe16Bottom = new Matrix4();
+var pipe17Bottom = new Matrix4();
+var pipe18Bottom = new Matrix4();
+var pipe19Bottom = new Matrix4();
+var pipe20Bottom = new Matrix4();
+
+
+var pipeBottomFromLight = new Matrix4();
+var pipe2BottomFromLight = new Matrix4();
+var pipe3BottomFromLight = new Matrix4();
+var pipe4BottomFromLight = new Matrix4();
+var pipe5BottomFromLight = new Matrix4();
+var pipe6BottomFromLight = new Matrix4();
+var pipe7BottomFromLight = new Matrix4();
+var pipe8BottomFromLight = new Matrix4();
+var pipe9BottomFromLight = new Matrix4();
+var pipe10BottomFromLight = new Matrix4();
+var pipe11BottomFromLight = new Matrix4();
+var pipe12BottomFromLight = new Matrix4();
+var pipe13BottomFromLight = new Matrix4();
+var pipe14BottomFromLight = new Matrix4();
+var pipe15BottomFromLight = new Matrix4();
+var pipe16BottomFromLight = new Matrix4();
+var pipe17BottomFromLight = new Matrix4();
+var pipe18BottomFromLight = new Matrix4();
+var pipe19BottomFromLight = new Matrix4();
+var pipe20BottomFromLight = new Matrix4();
+
+
+
+//shadow matrix
+var gndMd1FromLight = new Matrix4();
+var pipeMdl1FromLight = new Matrix4();
+var pipeMdl2FromLight = new Matrix4();
+var pipeMdl3FromLight = new Matrix4();
+var pipeMdl4FromLight = new Matrix4();
+var pipeMdl5FromLight = new Matrix4();
+var pipeMdl6FromLight = new Matrix4();
+var pipeMdl7FromLight = new Matrix4();
+var pipeMdl8FromLight = new Matrix4();
+var pipeMdl9FromLight = new Matrix4();
+var pipeMdl10FromLight = new Matrix4();
+var pipeMdl11FromLight = new Matrix4();
+var pipeMdl12FromLight = new Matrix4();
+var pipeMdl13FromLight = new Matrix4();
+var pipeMdl14FromLight = new Matrix4();
+var pipeMdl15FromLight = new Matrix4();
+var pipeMdl16FromLight = new Matrix4();
+var pipeMdl17FromLight = new Matrix4();
+var pipeMdl18FromLight = new Matrix4();
+var pipeMdl19FromLight = new Matrix4();
+var pipeMdl20FromLight = new Matrix4();
+
+//boo 
+var booMdlMatrix = new Matrix4();
+
 //array of pipe mat
-var pipeMdlMatrix = [];
+// var pipeGap = 0.5;
 
-var pipeGap = 0.5;
+var birdScale = 0.05;
 
+var booSize = 0.003;
 
-var birdScale = 0.1;
+var width = 5;
+var pipeGapX = 4;
 
-
-var width =5;
-var pipeGapX = 3;
+var points = 0;
 
 //generate an array of float between -2 and 2, whose size is 10
 function randomPipeGapY(){
@@ -59,6 +133,9 @@ function randomPipeGapY(){
     return arr;
 
 }
+
+//random number between 0 and 9
+var booOffset = Math.random() * 9;
 
 gapYarr = randomPipeGapY();
 
@@ -71,11 +148,12 @@ function init_mdl(){
     //set bird mdl
     if(isFlapping){
         birdYoffset += 0.5;
+        firstcameraY += 0.5;
         isFlapping = false;
     } 
 
     birdMatrix.setIdentity();   
-    birdMatrix.translate(birdX, birdY + birdYoffset, birdZ);
+    //log the bird position
     birdMatrix.scale(birdScale, birdScale, birdScale);
 
     //set gnd mdl
@@ -83,7 +161,7 @@ function init_mdl(){
     gndMdlMatrix.translate(0, -5, 0);
     gndMdlMatrix.scale(100, 0.1, 100);
 
-    //set pillar mdl
+    //set pipe mdl
     pipeMatrix.setIdentity(); 
     pipeMatrix.translate( width + pipeXoffset, -5 - gapYarr[1], 1.1); // z off by 1.1 
     pipeMatrix.scale(0.04, 0.1, 0.04);
@@ -105,6 +183,17 @@ function init_mdl(){
     pipeMatrix5.setIdentity();
     pipeMatrix5.translate( width + pipeXoffset + pipeGapX * 2, -5 - gapYarr[3], 1.1);
     pipeMatrix5.scale(0.04, 0.08, 0.04);
+
+        //boo
+        booMdlMatrix.setIdentity();
+        booMdlMatrix.translate (width + pipeXoffset + 0.8 + pipeGapX * 2 , -5 - gapYarr[3] + 2, 1.1 - 1.2);
+        //if comes to birdX, ygoes up
+        if(width + pipeXoffset + 0.8 + pipeGapX * 2 < 2.3 ){
+            booMdlMatrix.translate(0, 1.4, 0);
+        }
+        booMdlMatrix.rotate(-90, 0,1,0);
+        booMdlMatrix.scale(booSize, booSize, booSize);
+    
 
     pipeMatrix6.setIdentity();
     pipeMatrix6.rotate(180, 0, 0, 1);
@@ -175,141 +264,226 @@ function init_mdl(){
     pipeMatrix20.scale(0.04, 0.08, 0.04);
 
 
-}
-
-function drawBird() {
-    drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
-    for( var i = 1; i <= 8 ; i++){
-        birdMatrix.setIdentity();
-        birdMatrix.translate(birdScale * i, birdY + birdYoffset, 0);
-        birdMatrix.scale(birdScale, birdScale, birdScale);
-        drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    //test all pipeMatrix from 1, 3, 5 to 19, if the x is less than -2, points + 1
+    for(var i = 1; i < 20; i += 2){
+        if(width + pipeXoffset2 + pipeGapX * i < -2 && width + pipeXoffset2 + pipeGapX * i > -1){
+            points += 1;
+        }
     }
+    console.log("points: " + points);   
 
-    for( var i = 1; i <= 8 ; i++){
-        birdMatrix.setIdentity();
-        birdMatrix.translate(birdScale * i, birdY + birdYoffset, birdScale * 8);
-        birdMatrix.scale(birdScale, birdScale, birdScale);
-        drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
-    }
 
-}
+    //set pipe mdl for bottom part
+    pipeBottom.setIdentity();
+    pipeBottom.translate( width + pipeXoffset, -5 - gapYarr[1] - 39, 1.1);
+    pipeBottom.scale(0.04, 1, 0.04);
 
-function drawRobot() {
-    drawObjectWithTexture(cube, mdlMatrix, 0.0, 0.0, 0.0, "ballTex", false);
+    pipe2Bottom.setIdentity();
+    pipe2Bottom.rotate(180, 0, 0, 1); 
+    pipe2Bottom.translate( -width - 1.8 - pipeXoffset, -5 + gapYarr[1] - 39, 1.1);
+    pipe2Bottom.scale(0.04, 1, 0.04);
 
-    //celing and floor
-    gl.uniform1f(program.u_textureScale, 35.0);
-    drawObjectWithTexture(cube, gndMdlMatrix, 0.0, 0.0, 0.0, "groundTex", false);
-    gl.uniform1f(program.u_textureScale, 1.0);
-    // gndMdlMatrix.translate(0, 100, 0);
-    // drawObjectWithTexture(cube, gndMdlMatrix, 0.0, 0.0, 0.0, "groundTex", false);
+    pipe3Bottom.setIdentity();
+    pipe3Bottom.translate( width + pipeXoffset + pipeGapX , -5 - gapYarr[2] - 39, 1.1);
+    pipe3Bottom.scale(0.04, 1, 0.04);
     
-    //bird
-    drawBird();
+    pipe4Bottom.setIdentity();
+    pipe4Bottom.rotate(180, 0, 0, 1);
+    pipe4Bottom.translate( -width -1.8 - pipeXoffset - pipeGapX, -5 + gapYarr[2] - 39, 1.1);
+    pipe4Bottom.scale(0.04, 1, 0.04);
+
+    pipe5Bottom.setIdentity();
+    pipe5Bottom.translate( width + pipeXoffset + pipeGapX * 2, -5 - gapYarr[3] - 39, 1.1);
+    pipe5Bottom.scale(0.04, 1, 0.04);
+
+    pipe6Bottom.setIdentity();
+    pipe6Bottom.rotate(180, 0, 0, 1);
+    pipe6Bottom.translate( -width -1.8 - pipeXoffset - pipeGapX * 2, -5 + gapYarr[3] - 39, 1.1);
+    pipe6Bottom.scale(0.04, 1, 0.04);
+
+    pipe7Bottom.setIdentity();
+    pipe7Bottom.translate( width + pipeXoffset + pipeGapX * 3, -5 - gapYarr[4] - 39, 1.1);
+    pipe7Bottom.scale(0.04, 1, 0.04);
+
+    pipe8Bottom.setIdentity();
+    pipe8Bottom.rotate(180, 0, 0, 1);
+    pipe8Bottom.translate( -width -1.8 - pipeXoffset - pipeGapX * 3, -5 + gapYarr[4] - 39, 1.1);
+    pipe8Bottom.scale(0.04, 1, 0.04);
+
+    pipe9Bottom.setIdentity();
+    pipe9Bottom.translate( width + pipeXoffset + pipeGapX * 4, -5 - gapYarr[5] - 39, 1.1);
+    pipe9Bottom.scale(0.04, 1, 0.04);
+
+    pipe10Bottom.setIdentity();
+    pipe10Bottom.rotate(180, 0, 0, 1);
+    pipe10Bottom.translate( -width -1.8 - pipeXoffset - pipeGapX * 4, -5 + gapYarr[5] - 39, 1.1);
+    pipe10Bottom.scale(0.04, 1, 0.04);
+
+    pipe11Bottom.setIdentity();
+    pipe11Bottom.translate( width + pipeXoffset2 , -5 - gapYarr[6] - 39, 1.1);
+    pipe11Bottom.scale(0.04, 1, 0.04);
+
+    pipe12Bottom.setIdentity();
+    pipe12Bottom.rotate(180, 0, 0, 1);
+    pipe12Bottom.translate( -width -1.8 - pipeXoffset2, -5 + gapYarr[6] - 39, 1.1);
+    pipe12Bottom.scale(0.04, 1, 0.04);
+
+    pipe13Bottom.setIdentity();
+    pipe13Bottom.translate( width + pipeXoffset2 + pipeGapX, -5 - gapYarr[7] - 39, 1.1);
+    pipe13Bottom.scale(0.04, 1, 0.04);
+
+    pipe14Bottom.setIdentity();
+    pipe14Bottom.rotate(180, 0, 0, 1);
+    pipe14Bottom.translate( -width -1.8 - pipeXoffset2 - pipeGapX, -5 + gapYarr[7] - 39, 1.1);
+    pipe14Bottom.scale(0.04, 1, 0.04);
+
+    pipe15Bottom.setIdentity();
+    pipe15Bottom.translate( width + pipeXoffset2 + pipeGapX * 2, -5 - gapYarr[8] - 39, 1.1);
+    pipe15Bottom.scale(0.04, 1, 0.04);
+
+    pipe16Bottom.setIdentity();
+    pipe16Bottom.rotate(180, 0, 0, 1);
+    pipe16Bottom.translate( -width -1.8 - pipeXoffset2 - pipeGapX * 2, -5 + gapYarr[8] - 39, 1.1);
+    pipe16Bottom.scale(0.04, 1, 0.04);
+
+    pipe17Bottom.setIdentity();
+    pipe17Bottom.translate( width + pipeXoffset2 + pipeGapX * 3, -5 - gapYarr[9] - 39, 1.1);
+    pipe17Bottom.scale(0.04, 1, 0.04);
+
+    pipe18Bottom.setIdentity();
+    pipe18Bottom.rotate(180, 0, 0, 1);
+    pipe18Bottom.translate( -width -1.8 - pipeXoffset2 - pipeGapX * 3, -5 + gapYarr[9] - 39, 1.1);
+    pipe18Bottom.scale(0.04, 1, 0.04);
+
+    pipe19Bottom.setIdentity();
+    pipe19Bottom.translate( width + pipeXoffset2 + pipeGapX * 4, -5 - gapYarr[0] - 39, 1.1);
+    pipe19Bottom.scale(0.04, 1, 0.04);
+    
+    pipe20Bottom.setIdentity();
+    pipe20Bottom.rotate(180, 0, 0, 1);
+    pipe20Bottom.translate( -width -1.8 - pipeXoffset2 - pipeGapX * 4, -5 + gapYarr[0] - 39, 1.1);
+    pipe20Bottom.scale(0.04, 1, 0.04);
+
+}
+
+function drawAllShadows(){
+    gndMd1FromLight = drawOneObjectOnShadowfbo(cube, gndMdlMatrix);
+    pipeMdl1FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix);
+    pipeMdl2FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix2);
+    pipeMdl3FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix3);
+    pipeMdl4FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix4);
+    pipeMdl5FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix5);
+    pipeMdl6FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix6);
+    pipeMdl7FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix7);
+    pipeMdl8FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix8);
+    pipeMdl9FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix9);
+    pipeMdl10FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix10);
+    pipeMdl11FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix11);
+    pipeMdl12FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix12);
+    pipeMdl13FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix13);
+    pipeMdl14FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix14);
+    pipeMdl15FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix15);
+    pipeMdl16FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix16);
+    pipeMdl17FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix17);
+    pipeMdl18FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix18);
+    pipeMdl19FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix19);
+    pipeMdl20FromLight = drawOneObjectOnShadowfbo(pipe, pipeMatrix20);
+
+
+    pipeBottomFromLight = drawOneObjectOnShadowfbo(pipe, pipeBottom);
+    pipe2BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe2Bottom);
+    pipe3BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe3Bottom);
+    pipe4BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe4Bottom);
+    pipe5BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe5Bottom);
+    pipe6BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe6Bottom);
+    pipe7BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe7Bottom);
+    pipe8BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe8Bottom);
+    pipe9BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe9Bottom);
+    pipe10BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe10Bottom);
+    pipe11BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe11Bottom);
+    pipe12BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe12Bottom);
+    pipe13BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe13Bottom);
+    pipe14BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe14Bottom);
+    pipe15BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe15Bottom);
+    pipe16BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe16Bottom);
+    pipe17BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe17Bottom);
+    pipe18BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe18Bottom);
+    pipe19BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe19Bottom);
+    pipe20BottomFromLight = drawOneObjectOnShadowfbo(pipe, pipe20Bottom);
+}
+
+
+function drawRobot( vpMatrix ) {
+    gl.useProgram(program); 1
+    var cur_cameraX = new Matrix4();
+    var cur_cameraY = new Matrix4();
+    var cur_cameraZ = new Matrix4();
+    if (third_view) {
+        cur_cameraX = thirdcameraX;
+        cur_cameraY = thirdcameraY;
+        cur_cameraZ = thirdcameraZ;
+    } else {
+        cur_cameraX = firstcameraX;
+        cur_cameraY = firstcameraY;
+        cur_cameraZ = firstcameraZ;
+    }
+
+    //center 
+    drawObjectWithTexture( boo, booMdlMatrix, vpMatrix, gndMd1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ, "booTex")
+
+    //floor
+    gl.uniform1f(program.u_textureScale, 35.0);
+    drawObjectWithTexture(cube, gndMdlMatrix, vpMatrix, gndMd1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ, "groundTex");
+    gl.uniform1f(program.u_textureScale, 1.0);
+
+    
+    //bird1
+    drawBird( vpMatrix, birdMatrix, cur_cameraX, cur_cameraY, cur_cameraZ);
+    
+
 
     //pipe
-    drawObjectWithTexture(pipe, pipeMatrix, 0.0, 0.0, 0.0, "pipeTex", false);
+    drawObjectWithTexture(pipe, pipeMatrix, vpMatrix, pipeMdl1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeBottom, vpMatrix, pipeBottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix2, vpMatrix, pipeMdl2FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe2Bottom, vpMatrix, pipe2BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix3, vpMatrix, pipeMdl3FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe3Bottom, vpMatrix, pipe3BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix4, vpMatrix, pipeMdl4FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe4Bottom, vpMatrix, pipe4BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix5, vpMatrix, pipeMdl5FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe5Bottom, vpMatrix, pipe5BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix6, vpMatrix, pipeMdl6FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe6Bottom, vpMatrix, pipe6BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix7, vpMatrix, pipeMdl7FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe7Bottom, vpMatrix, pipe7BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix8, vpMatrix, pipeMdl8FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe8Bottom, vpMatrix, pipe8BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix9, vpMatrix, pipeMdl9FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe9Bottom, vpMatrix, pipe9BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix10, vpMatrix, pipeMdl10FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe10Bottom, vpMatrix, pipe10BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix11, vpMatrix, pipeMdl11FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe11Bottom, vpMatrix, pipe11BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix12, vpMatrix, pipeMdl12FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe12Bottom, vpMatrix, pipe12BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix13, vpMatrix, pipeMdl13FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe13Bottom, vpMatrix, pipe13BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix14, vpMatrix, pipeMdl14FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe14Bottom, vpMatrix, pipe14BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix15, vpMatrix, pipeMdl15FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe15Bottom, vpMatrix, pipe15BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix16, vpMatrix, pipeMdl16FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe16Bottom, vpMatrix, pipe16BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix17, vpMatrix, pipeMdl17FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe17Bottom, vpMatrix, pipe17BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix18, vpMatrix, pipeMdl18FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe18Bottom, vpMatrix, pipe18BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix19, vpMatrix, pipeMdl19FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe19Bottom, vpMatrix, pipe19BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipeMatrix20, vpMatrix, pipeMdl20FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
+    drawObjectWithTexture(pipe, pipe20Bottom, vpMatrix, pipe20BottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
 
-    drawObjectWithTexture(pipe, pipeMatrix2, 0.0, 0.0, 0.0, "pipeTex", false);
-    
-    drawObjectWithTexture(pipe, pipeMatrix3, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix4, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix5, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix6, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix7, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix8, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix9, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix10, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix11, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix12, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix13, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix14, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix15, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix16, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix17, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix18, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix19, 1.0, 0.0, 0.0, "pipeTex", false);
-
-    drawObjectWithTexture(pipe, pipeMatrix20, 0.0, 0.0, 0.0, "pipeTex", false);
-
-    for( var i = 0; i < 10 ; i++){
-        pipeMatrix.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix2.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix2, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix3.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix3, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix4.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix4, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix5.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix5, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix6.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix6, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix7.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix7, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix8.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix8, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix9.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix9, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix10.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix10, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix11.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix11, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix12.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix12, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix13.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix13, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix14.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix14, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix15.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix15, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix16.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix16, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix17.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix17, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix18.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix18, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix19.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix19, 0.0, 0.0, 0.0, "pipeTex", false);
-
-        pipeMatrix20.translate(0, -38, 0);
-        drawObjectWithTexture(pipe, pipeMatrix20, 0.0, 0.0, 0.0, "pipeTex", false);
-    }
 
     QuadMdlMatrix.setIdentity();
     QuadMdlMatrix.translate(-3, 1.2, 3);
@@ -317,23 +491,451 @@ function drawRobot() {
     
 }
 
-//gnd
-// const gridSize = 15;
-// const blockSize = 0.4;
-// const maxHeight = 0.2; // Height difference of one block
+var birdCollisionMat = new Matrix4();
 
-// for (let x = 0; x < gridSize; x++) {
-//   for (let z = 0 ; z < gridSize; z++) {
-//     // Generate height using a noise function or any height map
-//     const height = Math.sin(x * 0.5) * Math.cos(z * 0.5) * maxHeight;
+function drawBird( vpMatrix, birdMatrix, cur_cameraX, cur_cameraY, cur_cameraZ) {
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
     
-//     // Set the model matrix for each block
-//     gndMdlMatrix.setIdentity();
-//     gndMdlMatrix.translate(-2, 0, -1); 
-//     gndMdlMatrix.translate(x * blockSize, height, z * blockSize); // Translate on x, height on y, and z axes
-//     gndMdlMatrix.scale(blockSize, blockSize, blockSize);
+    //first row
+    for( var i = 0; i <= 5 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2, birdY + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    //second row
+    for( var i = 1; i <= 2 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(-birdScale * i * 2,birdY + -birdScale * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    for( var i = 0; i <= 2 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,0, false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 3 * 2, birdY + -birdScale * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 4; i <= 5 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,1 ,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 6* 2, birdY + -birdScale * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+
+    //thrid row
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -3 * 2, birdY + -birdScale * 2 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+
+    for( var i = -2; i <= 1 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 2 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,0 ,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 2 * 2, birdY + -birdScale * 2 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 3; i <= 6 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 2 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,1 ,false);   
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 7 * 2, birdY + -birdScale * 2 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    //fourth row
+    for( var i = -2; i >= -5 ; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    for( var i = -1; i <= 1; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 2 * 2, birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 3; i <= 5; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,1,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 6 * 2, birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0,0,0.2, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0,0,0.2, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 7 * 2, birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 1,1,1, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 8 * 2, birdY + -birdScale * 3 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    //fifth row
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -6 * 2, birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = -1; i >= -5; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -1 * 2, birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 0; i <= 1; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 2 * 2, birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 3; i <= 5; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,1,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 6 * 2, birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0,0,0.2, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0,0,0.2, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 7 * 2, birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 1,1,1, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 8 * 2, birdY + -birdScale * 4 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    //sixth row
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -6 * 2, birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = -1; i >= -5; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 0 * 2, birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 1; i <= 2; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 3 * 2, birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 4; i <= 7; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,1,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,1, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 8 * 2, birdY + -birdScale * 5 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    //seventh row
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -6 * 2, birdY + -birdScale * 6 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = -1; i >= -5; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 6 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 0 * 2, birdY + -birdScale * 6 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 1; i <= 3; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 6 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    for( var i = 4; i <= 9; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 6 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    //eighth row
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -5 * 2, birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = -2; i >= -4; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -1 * 2, birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 0; i <= 2; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,1,1,0,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 3 * 2, birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 4; i <= 9; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.7,0,0, false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.7,0,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 10 * 2, birdY + -birdScale * 7 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    //ninth row
+    for( var i = -2; i >= -4; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 8 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    for( var i = 1; i >= -1; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 8 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,0.5,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0.5, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 2 * 2, birdY + -birdScale * 8 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 3 * 2, birdY + -birdScale * 8 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 1,0,0 , false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 1,0,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 4; i <= 9 ; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 8 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    //tenth row
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * -4 * 2, birdY + -birdScale * 9 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+
+    for( var i = 2; i >= -3; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 9 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,0.5,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0.5, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 3 * 2, birdY + -birdScale * 9 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    for( var i = 4; i <= 9; i++){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 9 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.7,0,0, false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.7,0,0, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    birdMatrix.setIdentity();
+    birdMatrix.translate(birdScale * 9 * 2, birdY + -birdScale * 9 * 2 + birdYoffset, 0);
+    birdMatrix.scale(birdScale, birdScale, birdScale);
+    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
+    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+
+    //eleventh row
+    for( var i = -2; i >= -3; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 10 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    for( var i = 3; i >= -1; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 10 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix, 1,1,0.5,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 1,1,0.5, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+    for( var i = 8; i >= 4; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 10 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,0.4, 0.239, 0.078,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+        birdCollisionMat = birdMatrix
+    }
+
     
-//     // Draw the block with the texture
-//     drawObjectWithTexture(cube, gndMdlMatrix, 0.0, 0.0, 0.0, "groundTex", false);
-//   }
-// }
+
+
+    //twelfth row
+    for( var i = 3; i >= -1; i--){
+        birdMatrix.setIdentity();
+        birdMatrix.translate(birdScale * i * 2,birdY + -birdScale * 11 * 2 + birdYoffset, 0);
+        birdMatrix.scale(birdScale, birdScale, birdScale);
+        // drawOneObject(cube, birdMatrix,0.4, 0.239, 0.078,false);
+        drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    }
+
+}
+
+

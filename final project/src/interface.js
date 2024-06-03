@@ -88,10 +88,11 @@ function interface() {
      var newViewDir = rotateMatrix.multiplyVector3(viewDir);
      //if up arrow key is pressed
      if( event.key == 'ArrowUp'){
-        console.log('space')
+        console.log('up')
         isFlapping = true;
         draw_all()
-     }else if( event.key == 'a' || event.key == 'A'){
+     } 
+     else if( event.key == 'a' || event.key == 'A'){
           console.log('A')
           bodyXMove -= 0.1;
           draw_all()
@@ -151,20 +152,12 @@ function interface() {
           draw_all()
       }else if ( event.key == '1' ){  
           console.log('1')
-          objAngle1 -= 10;
+          third_view = 0;
           draw_all()
-      }else if ( event.key == '2'){  //rotate the second triangle
-          console.log('2')
-          objAngle1 += 10;
-          draw_all()
-      }else if ( event.key == '3' ){  
+      } else if ( event.key == '3' ){  
           console.log('3')
-          objAngle2 -= 10;
-          draw_all()
-      }else if ( event.key == '4'){  //rotate the second triangle
-          console.log('4')
-          objAngle2 += 10;
-          draw_all()
+          third_view = 1;
+          draw_all();
       }else if ( event.key == 'g' || event.key == 'G'){ //shorten the second triangle
         console.log('G')
         distance = Math.sqrt(Math.pow(clawCorner.elements[0] - objVer.elements[0], 2) + Math.pow(clawCorner.elements[1] - objVer.elements[1], 2) + Math.pow(clawCorner.elements[2] - objVer.elements[2], 2));

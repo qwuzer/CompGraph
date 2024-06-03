@@ -294,9 +294,20 @@ function draw(){
   let cubeMvpFromLight = drawOffScreen(cubeObj, cubeMdlMatrix);
   //mario
   let marioMdlMatrix = new Matrix4();
-  marioMdlMatrix.setTranslate(0.0, 1.4, 0.0);
+  marioMdlMatrix.setTranslate(2.0, 1.4, 0.0);
   marioMdlMatrix.scale(0.02,0.02,0.02);
   let marioMvpFromLight = drawOffScreen(marioObj, marioMdlMatrix);
+  //mario2
+  let marioMdlMatrix1 = new Matrix4();
+  marioMdlMatrix1.setTranslate(0.0, 2.0, 0.0);
+  marioMdlMatrix1.scale(0.02,0.02,0.02);
+  let marioMvpFromLight1 = drawOffScreen(marioObj, marioMdlMatrix1);
+
+  //tesrt cube
+  let cubemat = new Matrix4();
+  cubemat.setIdentity();
+  cubemat.scale(0.1, 0.1, 0.1);
+  cubemat.translate(4, 4, 2);
 
   ///// on scree rendering
   if( normalMode ){
@@ -310,6 +321,10 @@ function draw(){
     drawOneObjectOnScreen(cubeObj, cubeMdlMatrix, cubeMvpFromLight, 1.0, 0.4, 0.4);
     //mario
     drawOneObjectOnScreen(marioObj, marioMdlMatrix, marioMvpFromLight, 0.4, 1.0, 0.4);
+    //mario2  
+    drawOneObjectOnScreen(marioObj, marioMdlMatrix1, marioMvpFromLight1, 0.4, 0.4, 1.0);
+    //
+    drawOneObject(cubeObj, cubemat, 4, 0.4, 0.4);
   }else{
     //TODO-1:
     //draw the shadow map (the quad)
@@ -325,6 +340,54 @@ function draw(){
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
+}
+var modelMatrix = new Matrix4();
+var mvpMatrix = new Matrix4();
+
+function drawOneObject(
+  obj, mdlMatrix,colorR, colorG, colorB
+){
+    gl.useProgram(program);
+    //model Matrix (part of the mvp matrix)
+    if( colorR == 0.343 && colorG == 1.0 && colorB == 0.0){
+        modelMatrix.setIdentity();
+    } else{
+      
+      modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
+      modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
+    }
+   
+    modelMatrix.multiply(mdlMatrix);
+    //mvp: projection * view * model matrix  
+    mvpMatrix.setPerspective(30, 1, 1, 100);
+    mvpMatrix.lookAt(cameraX , cameraY, cameraZ , 0, 0, 0, 0, 1, 0);
+    mvpMatrix.multiply(modelMatrix);
+
+    //normal matrix
+    // normalMatrix.setInverseOf(modelMatrix);
+    // normalMatrix.transpose();
+
+    gl.uniform3f(program.u_LightPosition, 3, 3, 2);
+    gl.uniform3f(program.u_ViewPosition, cameraX, cameraY, cameraZ);
+    gl.uniform1f(program.u_Ka, 0.2);
+    gl.uniform1f(program.u_Kd, 0.7);
+    gl.uniform1f(program.u_Ks, 1.0);
+    gl.uniform1f(program.u_shininess, 10.0);
+    gl.uniform3f(program.u_Color, colorR, colorG, colorB);
+
+
+    gl.uniformMatrix4fv(program.u_MvpMatrix, false, mvpMatrix.elements);
+    gl.uniformMatrix4fv(program.u_modelMatrix, false, modelMatrix.elements);
+    // gl.uniformMatrix4fv(program.u_normalMatrix, false, normalMatrix.elements);
+
+    // gl.bindTexture(gl.TEXTURE_2D, textures[texture]);
+    
+    
+    for( let i=0; i < obj.length; i ++ ){
+      initAttributeVariable(gl, program.a_Position, obj[i].vertexBuffer);
+      initAttributeVariable(gl, program.a_Normal, obj[i].normalBuffer);
+      gl.drawArrays(gl.TRIANGLES, 0, obj[i].numVertices);
+    }
 }
 
 function drawOffScreen(obj, mdlMatrix){

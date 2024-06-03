@@ -18,21 +18,23 @@ var textures = {};
 var texCount = 0;
 
 var fbo;
+var shadowfbo;
 var offScreenWidth = 800,
     offScreenHeight = 800;
 
 
 //bird
-var birdX = 0 , birdY = 2, birdZ = 0;
+var birdX = 0 , birdY = 0, birdZ = 0;
 var isFlapping = false;
 var birdYoffset = 0;
-var birdYMove = -0.015;
+var birdYMove = -0.02;
+// var birdYMove = 0;
 
 //pillar
 var pillarX = 0, pillarY = 0, pillarZ = 0;
 var pipeXoffset = 0;
-var pipeXoffset2 = 15;
-var pipeXMove = -0.07;
+var pipeXoffset2 = 20;
+var pipeXMove = -0.05;
 
 var first = true;
 
@@ -79,6 +81,11 @@ async function main(){
       512
     );
 
+    shadowProgram = compileShader(gl, VSHADER_SHADOW_SOURCE, FSHADER_SHADOW_SOURCE);
+    shadowProgram.a_Position = gl.getAttribLocation(shadowProgram, 'a_Position');
+    shadowProgram.u_MvpMatrix = gl.getUniformLocation(shadowProgram, 'u_MvpMatrix');
+
+
     program = compileShader(gl, VSHADER_SOURCE, FSHADER_SOURCE);
     gl.useProgram(program);
     program.a_Position = gl.getAttribLocation(program, 'a_Position'); 
@@ -89,10 +96,12 @@ async function main(){
     program.u_normalMatrix = gl.getUniformLocation(program, 'u_normalMatrix');
     program.u_LightPosition = gl.getUniformLocation(program, 'u_LightPosition');
     program.u_ViewPosition = gl.getUniformLocation(program, 'u_ViewPosition');
+    program.u_MvpMatrixOfLight = gl.getUniformLocation(program, 'u_MvpMatrixOfLight');
     program.u_Ka = gl.getUniformLocation(program, 'u_Ka'); 
     program.u_Kd = gl.getUniformLocation(program, 'u_Kd');
     program.u_Ks = gl.getUniformLocation(program, 'u_Ks');
     program.u_shininess = gl.getUniformLocation(program, 'u_shininess');
+    program.u_ShadowMap = gl.getUniformLocation(program, "u_ShadowMap");
     program.u_Color = gl.getUniformLocation(program, 'u_Color'); 
     program.u_textureScale = gl.getUniformLocation(program, 'u_textureScale');
     gl.uniform1f(program.u_textureScale, 1.0);
@@ -102,6 +111,7 @@ async function main(){
     normalMatrix = new Matrix4();
 
     fbo = initFrameBuffer(gl);
+    shadowfbo = initFrameBuffer(gl);
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -110,34 +120,56 @@ async function main(){
     draw_all();
     interface();
 
-  
-    var tick = function(){
+    var end = false;
+    var gameTime = 60;
+
+    var timerElement = document.getElementById('time');
+
+    var timer = setInterval(() => {
+        if (gameTime > 0) {
+            gameTime--;
+            timerElement.textContent = gameTime;
+        } else {
+            clearInterval(timer);
+        }
+    }, 1000);
+
+    setInterval(() => {
+        tick;
+    }, 1);
+
+    var tick = function(){  
+        console.log("gametime: " + gameTime); 
+
+        if(end) return;
         
         if( birdYoffset < -3 ){
             console.log("end");
             birdoffset = 0;
+            // end = true;
         } else{
+            firstcameraY += birdYMove;
             birdYoffset += birdYMove; // offsets add up all the movement
         }
 
         
-        if( pipeXoffset < -30 ){
+        if( pipeXoffset < -40 ){
           pipeXoffset = 0;
         } 
 
         if( first ){
-          if( pipeXoffset2 < -30 ){
+          if( pipeXoffset2 < -40 ){
             pipeXoffset2 = 0;
             first = false;
           }
         } else {
-          if( pipeXoffset2 < -30 ){
+          if( pipeXoffset2 < -40 ){
             pipeXoffset2 = 0;
           }
         }
 
-        // pipeXoffset += pipeXMove;
-        // pipeXoffset2 += pipeXMove;
+        pipeXoffset += pipeXMove;
+        pipeXoffset2 += pipeXMove;
         
 
         draw_all();
@@ -145,6 +177,7 @@ async function main(){
     }
 
     tick();
+    
 }
 
 
@@ -172,67 +205,121 @@ async function load_one_model(file_path) {
 }
 
 
-function draw_all(){
+var lightX = 0, lightY = 10, lightZ = 20;
+var scaleScene = 0;
+var cameraDirX = 10, cameraDirY = 0, cameraDirZ = 0;
+var cameraDirX3 = 0, cameraDirY3 = 0.2, cameraDirZ3 = -10;
+var room = 0;
+var view_size = 60;
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+var thirdcameraX = 1,
+    thirdcameraY = 0.2,
+    thirdcameraZ = 8;
+var firstcameraX = 0,
+    firstcameraY = 0,
+    firstcameraZ = 0;
+
+var third_view = 1;
+
+function draw_all(){
+    if( third_view == 1 ){
+      var viewDir = new Vector3([cameraDirX3, cameraDirY3, cameraDirZ3]);
+    } else {
+      var viewDir = new Vector3([cameraDirX, cameraDirY, cameraDirZ]);
+    }
+
+    var rotateMatrix = new Matrix4();
+    rotateMatrix.setRotate(angleX, 0, 1, 0); //for mouse rotation
+    rotateMatrix.rotate(angleY, 1, 0, 0); //for mouse rotation
+    var newViewDir = rotateMatrix.multiplyVector3(viewDir);
+
+    var vMatrix = new Matrix4();
+    var pMatrix = new Matrix4();
+    pMatrix.setPerspective(view_size, 1, 1, 1000);
+
+    if(third_view){
+      vMatrix.lookAt(
+        thirdcameraX,
+        thirdcameraY,
+        thirdcameraZ,
+        thirdcameraX + newViewDir.elements[0],
+        thirdcameraY + newViewDir.elements[1],
+        thirdcameraZ + newViewDir.elements[2],
+        0,
+        1,
+        0
+      );
+    } else{
+      vMatrix.lookAt(
+        firstcameraX,
+        firstcameraY,
+        firstcameraZ,
+        firstcameraX + newViewDir.elements[0],
+        firstcameraY + newViewDir.elements[1],
+        firstcameraZ + newViewDir.elements[2],
+        0,
+        1,
+        0
+      );
+    }
+
+    var vpMatrix = new Matrix4();
+    vpMatrix.set(pMatrix);
+    vpMatrix.multiply(vMatrix);
+
+    init_mdl();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shadowfbo);
     gl.viewport(0, 0, offScreenWidth, offScreenHeight);
-    draw();
-    drawObjectWithTexture(cube, QuadMdlMatrix, 0.0, 0.0, 0.0, "ballTex", false);
-    
+    draw_shadow();
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    draw();
-    drawObjectWithTexture(cube, QuadMdlMatrix, 0.0, 0.0, 0.0, "ballTex", true);
-
+    gl.viewport(0, 0, canvas.width, canvas.width);
+    draw_world(vMatrix, pMatrix, vpMatrix);
 
 }
 
+function draw_shadow() {
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
 
-function draw(){
+  drawAllShadows();
+}
+
+function draw_world(vMatrix, pMatrix, vpMatrix) {
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+
+  draw_cubemap( vMatrix, pMatrix) ;
+
+  drawRobot( vpMatrix);
+}
+
+
+function draw( vMatrix, pMatrix , vpMatrix ){
+  //cube map
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);
+  draw_cubemap( vMatrix, pMatrix);
 
-  draw_cubemap();
-
+  //on screen
   gl.useProgram(program);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);    
+  
   init_mdl();
-  drawRobot();
+  drawRobot( vpMatrix );
 }
 
-var lightX = 3, lightY = 3, lightZ = 2;
-var scaleScene = 0;
-var cameraX = 0, cameraY = 0, cameraZ = 20;
-var cameraDirX = 3, cameraDirY = 5, cameraDirZ = 15;
-var room = 0;
-
-function draw_cubemap() {
-  let rotateMatrix = new Matrix4();
-  // rotateMatrix.setRotate(angleY, 1, 0, 0); //for mouse rotation
-  // rotateMatrix.rotate(angleX, 0, 1, 0); //for mouse rotation
-  var viewDir = new Vector3([cameraDirX, cameraDirY, cameraDirZ]);
-  var newViewDir = rotateMatrix.multiplyVector3(viewDir);
-
+function draw_cubemap( vMatrix, pMatrix ) {
   var vpFromCamera = new Matrix4();
-  vpFromCamera.setPerspective(60 - room, 1, 1, 15);
-  var viewMatrixRotationOnly = new Matrix4();
-  viewMatrixRotationOnly.lookAt(
-      cameraX,
-      cameraY,
-      cameraZ,
-      cameraX + newViewDir.elements[0],
-      cameraY + newViewDir.elements[1],
-      cameraZ + newViewDir.elements[2],
-      0,
-      1,
-      0
-  );
-  viewMatrixRotationOnly.elements[12] = 0; //ignore translation
-  viewMatrixRotationOnly.elements[13] = 0;
-  viewMatrixRotationOnly.elements[14] = 0;
-  vpFromCamera.multiply(viewMatrixRotationOnly);
+  vpFromCamera.set(pMatrix);
+  vMatrix.elements[12] = 0; //ignore translation
+  vMatrix.elements[13] = 0;
+  vMatrix.elements[14] = 0;
+  vpFromCamera.multiply(vMatrix);
   var vpFromCameraInverse = vpFromCamera.invert();
 
   //quad
@@ -251,30 +338,27 @@ function draw_cubemap() {
 }
 
 function drawOneObject(
-  obj, mdlMatrix,colorR, colorG, colorB
+  obj, mdlMatrix, vpMatrix, colorR, colorG, colorB , cameraX, cameraY, cameraZ
 ){
-    //model Matrix (part of the mvp matrix)
-    if( colorR == 1.0 && colorG == 1.0 && colorB == 0.0){
-        modelMatrix.setIdentity();
-    } else{
-      modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
-      modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
-    }
-   
+    gl.useProgram(program);
+    var mvpMatrix = new Matrix4();
+    var modelMatrix = new Matrix4();
+    var normalMatrix = new Matrix4();
+    mvpMatrix.setIdentity();
+    mvpMatrix.multiply(vpMatrix);
+    mvpMatrix.multiply(mdlMatrix);
+
+    modelMatrix.setIdentity();
     modelMatrix.multiply(mdlMatrix);
-    //mvp: projection * view * model matrix  
-    mvpMatrix.setPerspective(30, 1, 1, 100);
-    mvpMatrix.lookAt(cameraX , cameraY, cameraZ + scaleScene, 0, 0, 0, 0, 1, 0);
-    mvpMatrix.multiply(modelMatrix);
 
     //normal matrix
     normalMatrix.setInverseOf(modelMatrix);
     normalMatrix.transpose();
 
-    gl.uniform3f(program.u_LightPosition, 3, 3, 2);
+    gl.uniform3f(program.u_LightPosition, lightX, lightY, lightZ);
     gl.uniform3f(program.u_ViewPosition, cameraX, cameraY, cameraZ);
-    gl.uniform1f(program.u_Ka, 0.2);
-    gl.uniform1f(program.u_Kd, 0.7);
+    gl.uniform1f(program.u_Ka, 0.6);
+    gl.uniform1f(program.u_Kd, 0.8);
     gl.uniform1f(program.u_Ks, 1.0);
     gl.uniform1f(program.u_shininess, 10.0);
     gl.uniform3f(program.u_Color, colorR, colorG, colorB);
@@ -284,9 +368,6 @@ function drawOneObject(
     gl.uniformMatrix4fv(program.u_modelMatrix, false, modelMatrix.elements);
     gl.uniformMatrix4fv(program.u_normalMatrix, false, normalMatrix.elements);
 
-    // gl.bindTexture(gl.TEXTURE_2D, textures[texture]);
-    
-    
     for( let i=0; i < obj.length; i ++ ){
       initAttributeVariable(gl, program.a_Position, obj[i].vertexBuffer);
       initAttributeVariable(gl, program.a_Normal, obj[i].normalBuffer);
@@ -295,38 +376,51 @@ function drawOneObject(
 }
 
 function drawObjectWithTexture (
-  obj, mdlMatrix,colorR, colorG, colorB, texture, fbomode
+  obj, mdlMatrix, vpMatrix, mvpFromLight, cameraX, cameraY, cameraZ, texture
 ){
-  //model Matrix (part of the mvp matrix)
-  modelMatrix.setRotate(angleY, 1, 0, 0);//for mouse rotation
-  modelMatrix.rotate(angleX, 0, 1, 0);//for mouse rotation
+  gl.useProgram(program);
+  var mvpMatrix = new Matrix4();
+  var modelMatrix = new Matrix4();
+  var normalMatrix = new Matrix4();
+
+  // mvpMatrix.set(vpMatrix);
+  mvpMatrix.setIdentity();
+  mvpMatrix.multiply(vpMatrix);
+  mvpMatrix.multiply(mdlMatrix);
+
+  modelMatrix.setIdentity();
   modelMatrix.multiply(mdlMatrix);
-  //mvp: projection * view * model matrix  
-  mvpMatrix.setPerspective(30, 1, 1, 100);
-  mvpMatrix.lookAt(cameraX , cameraY, cameraZ + scaleScene, 0, 0, 0, 0, 1, 0);
-  mvpMatrix.multiply(modelMatrix);
 
   //normal matrix
-  normalMatrix.setInverseOf(modelMatrix);
+  normalMatrix.setInverseOf(mdlMatrix);
   normalMatrix.transpose();
 
-  gl.uniform3f(program.u_LightPosition, 3, 3, 2);
+  gl.uniform3f(program.u_LightPosition, lightX, lightY, lightZ);
   gl.uniform3f(program.u_ViewPosition, cameraX, cameraY, cameraZ);
-  gl.uniform1f(program.u_Ka, 0.2);
+  gl.uniform1f(program.u_Ka, 0.4);
   gl.uniform1f(program.u_Kd, 0.7);
   gl.uniform1f(program.u_Ks, 1.0);
   gl.uniform1f(program.u_shininess, 10.0);
-  gl.uniform3f(program.u_Color, colorR, colorG, colorB);
+  // gl.uniform3f(program.u_Color, colorR, colorG, colorB);
+  if( texture == "booTex" ){
+    gl.uniform3f(program.u_Color, 0,0,0);
+  } else {
+  gl.uniform3f(program.u_Color, 0.0, 0.0, 0.0);
+  }
+  gl.uniformMatrix4fv(
+    program.u_MvpMatrixOfLight,
+    false,
+    mvpFromLight.elements
+  );
 
 
   gl.activeTexture(gl.TEXTURE0);
-  if (fbomode) {
-    gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
-  } else {
-      // console.log("textture!!")
-      gl.bindTexture(gl.TEXTURE_2D, textures[texture]);
-  }
+  gl.bindTexture(gl.TEXTURE_2D, textures[texture]);
   gl.uniform1i(program.u_Sampler, 0);
+
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, shadowfbo.texture);
+  gl.uniform1i(program.u_ShadowMap, 1);
 
   gl.uniformMatrix4fv(program.u_MvpMatrix, false, mvpMatrix.elements);
   gl.uniformMatrix4fv(program.u_modelMatrix, false, modelMatrix.elements);
@@ -339,6 +433,33 @@ function drawObjectWithTexture (
     gl.drawArrays(gl.TRIANGLES, 0, obj[i].numVertices);
   }
 
+}
+
+function drawOneObjectOnShadowfbo(obj, mdlMatrix) {
+  var mvpFromLight = new Matrix4();
+  //model Matrix (part of the mvp matrix)
+  //mvp: projection * view * model matrix
+  mvpFromLight.setPerspective(160, offScreenWidth / offScreenHeight, 1, 1000);
+  mvpFromLight.lookAt(lightX, lightY, lightZ, 5, 0, 0, 0, 1, 0);
+  mvpFromLight.multiply(mdlMatrix);
+
+  gl.useProgram(shadowProgram);
+  gl.uniformMatrix4fv(
+      shadowProgram.u_MvpMatrix,
+      false,
+      mvpFromLight.elements
+  );
+
+  for (let i = 0; i < obj.length; i++) {
+      initAttributeVariable(
+          gl,
+          shadowProgram.a_Position,
+          obj[i].vertexBuffer
+      );
+      gl.drawArrays(gl.TRIANGLES, 0, obj[i].numVertices);
+  }
+
+  return mvpFromLight;
 }
 
 
@@ -369,4 +490,9 @@ async function load_all_texture() {
   var imagePipe= new Image();
   imagePipe.onload = function(){initTexture(gl, imagePipe, "pipeTex");};
   imagePipe.src = "./texture/pipe.jpeg";
+
+  //boo
+  var imageBoo= new Image();
+  imageBoo.onload = function(){initTexture(gl, imageBoo, "booTex");};
+  imageBoo.src = "./texture/boo.png";
 }
