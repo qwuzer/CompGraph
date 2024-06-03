@@ -36,6 +36,8 @@ var pipeXoffset = 0;
 var pipeXoffset2 = 20;
 var pipeXMove = -0.05;
 
+var points = 0;
+var end = false;
 var first = true;
 
 async function main(){
@@ -70,16 +72,31 @@ async function main(){
 
     quadObj = initVertexBufferForLaterUse(gl, quad);
 
+    // cubeMapTex = initCubeTexture(
+    //   "./cubemap/pos-x.jpg",
+    //   "./cubemap/neg-x.jpg",
+    //   "./cubemap/pos-y.jpg",
+    //   "./cubemap/neg-y.jpg",
+    //   "./cubemap/pos-z.jpg",
+    //   "./cubemap/neg-z.jpg",
+    //   512,
+    //   512
+    // );
+
     cubeMapTex = initCubeTexture(
-      "./cubemap/pos-x.jpg",
-      "./cubemap/neg-x.jpg",
-      "./cubemap/pos-y.jpg",
-      "./cubemap/neg-y.jpg",
-      "./cubemap/pos-z.jpg",
-      "./cubemap/neg-z.jpg",
-      512,
-      512
+      "./cubemap/right.png",
+      "./cubemap/left.png",
+      
+      "./cubemap/top.png",
+      "./cubemap/bottom.png",
+      
+      "./cubemap/front.png",
+      "./cubemap/back.png",
+      256,
+      256
     );
+    
+
 
     shadowProgram = compileShader(gl, VSHADER_SHADOW_SOURCE, FSHADER_SHADOW_SOURCE);
     shadowProgram.a_Position = gl.getAttribLocation(shadowProgram, 'a_Position');
@@ -120,13 +137,15 @@ async function main(){
     draw_all();
     interface();
 
-    var end = false;
+    
     var gameTime = 60;
+    // var points = 0;
 
-    var timerElement = document.getElementById('time');
+    var timerElement = document.getElementById('time'); 
+    var pointElement = document.getElementById('point');
 
     var timer = setInterval(() => {
-        if (gameTime > 0) {
+        if (gameTime > 0 && !end) {
             gameTime--;
             timerElement.textContent = gameTime;
         } else {
@@ -139,14 +158,15 @@ async function main(){
     }, 1);
 
     var tick = function(){  
-        console.log("gametime: " + gameTime); 
+        pointElement.textContent = points;
+
 
         if(end) return;
         
         if( birdYoffset < -3 ){
             console.log("end");
             birdoffset = 0;
-            // end = true;
+            end = true;
         } else{
             firstcameraY += birdYMove;
             birdYoffset += birdYMove; // offsets add up all the movement

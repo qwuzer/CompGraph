@@ -122,7 +122,7 @@ var booSize = 0.003;
 var width = 5;
 var pipeGapX = 4;
 
-var points = 0;
+
 
 //generate an array of float between -2 and 2, whose size is 10
 function randomPipeGapY(){
@@ -141,10 +141,6 @@ gapYarr = randomPipeGapY();
 
 
 function init_mdl(){
-    //center of the map
-    mdlMatrix.setIdentity();
-    mdlMatrix.scale(0.5, 0.5, 0.5);
-
     //set bird mdl
     if(isFlapping){
         birdYoffset += 0.5;
@@ -153,8 +149,8 @@ function init_mdl(){
     } 
 
     birdMatrix.setIdentity();   
-    //log the bird position
     birdMatrix.scale(birdScale, birdScale, birdScale);
+    // console.log("BirdY: " + (birdY + -birdScale * 11 * 2 + birdYoffset));
 
     //set gnd mdl
     gndMdlMatrix.setIdentity();
@@ -165,6 +161,11 @@ function init_mdl(){
     pipeMatrix.setIdentity(); 
     pipeMatrix.translate( width + pipeXoffset, -5 - gapYarr[1], 1.1); // z off by 1.1 
     pipeMatrix.scale(0.04, 0.1, 0.04);
+    // console.log("Y: " + (-5 - gapYarr[1] + 6 ));
+    
+    mdlMatrix.setIdentity();
+    mdlMatrix.translate(width + pipeXoffset, -5 - gapYarr[1] + 3, 1.1);
+
 
     pipeMatrix2.setIdentity(); 
     pipeMatrix2.rotate(180, 0, 0, 1); 
@@ -263,14 +264,56 @@ function init_mdl(){
     pipeMatrix20.translate( -width -1.8 - pipeXoffset2 - pipeGapX * 4, -5 + gapYarr[0], 1.1);
     pipeMatrix20.scale(0.04, 0.08, 0.04);
 
+    //lose
+    for( var i = 1; i < 6; i++){
+        var j = i - 1;
+        if( (-5 - gapYarr[i] + 6.6 < birdY + birdYoffset && (width + pipeXoffset + pipeGapX * j  <= 0.05 && width + pipeXoffset + pipeGapX * j >= 0 )) 
+            || (-5 - gapYarr[i] + 3.4 > birdY + -birdScale * 11 * 2 + birdYoffset  && (width + pipeXoffset + pipeGapX * j<= 0.05 && width + pipeXoffset + pipeGapX * j>= 0 ))){
+            end = true;
+        }
+    }
+    for( var i = 6; i < 11; i++){
+        var j = 0;
+        switch(i){
+            case 6:
+                j = 0;
+                break;
+            case 7:
+                j = 1;
+                break;
+            case 8:
+                j = 2;
+                break;
+            case 9:
+                j = 3;
+                break;
+            case 10:
+                j = 4;
+                break;
+            default:
+                break;
+        }
+        if( i == 10 ) i = 0;
+        if( (-5 - gapYarr[i] + 6.6 < birdY + birdYoffset && (width + pipeXoffset2 + pipeGapX * j <= 0.05 && width + pipeXoffset2 + pipeGapX * j >= 0 )) 
+            || (-5 - gapYarr[i] + 3.4> birdY + -birdScale * 11 * 2 + birdYoffset  && (width + pipeXoffset2 + pipeGapX * j <= 0.05 && width + pipeXoffset2 + pipeGapX * j>= 0 ))){
+            end = true;
+        }
+        if( i == 0 ) break;
+    }
 
-    //test all pipeMatrix from 1, 3, 5 to 19, if the x is less than -2, points + 1
-    for(var i = 1; i < 20; i += 2){
-        if(width + pipeXoffset2 + pipeGapX * i < -2 && width + pipeXoffset2 + pipeGapX * i > -1){
+
+    //points
+    for(var i = 0; i < 5; i++ ){
+        if(width + pipeXoffset + pipeGapX * i <= 0.05 && width + pipeXoffset + pipeGapX * i >= 0){
             points += 1;
         }
     }
-    console.log("points: " + points);   
+
+   for( var i = 0; i < 5; i++){
+        if(width + pipeXoffset2 + pipeGapX * i <= 0.05 && width + pipeXoffset2 + pipeGapX * i >= 0){
+            points += 1;
+        }
+    }
 
 
     //set pipe mdl for bottom part
@@ -414,7 +457,7 @@ function drawAllShadows(){
 
 
 function drawRobot( vpMatrix ) {
-    gl.useProgram(program); 1
+    gl.useProgram(program); 
     var cur_cameraX = new Matrix4();
     var cur_cameraY = new Matrix4();
     var cur_cameraZ = new Matrix4();
@@ -429,7 +472,7 @@ function drawRobot( vpMatrix ) {
     }
 
     //center 
-    drawObjectWithTexture( boo, booMdlMatrix, vpMatrix, gndMd1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ, "booTex")
+    // drawObjectWithTexture( boo, booMdlMatrix, vpMatrix, gndMd1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ, "booTex")
 
     //floor
     gl.uniform1f(program.u_textureScale, 35.0);
@@ -440,7 +483,8 @@ function drawRobot( vpMatrix ) {
     //bird1
     drawBird( vpMatrix, birdMatrix, cur_cameraX, cur_cameraY, cur_cameraZ);
     
-
+    //test
+    // drawObjectWithTexture(cube, mdlMatrix, vpMatrix, pipeMdl1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
 
     //pipe
     drawObjectWithTexture(pipe, pipeMatrix, vpMatrix, pipeMdl1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
@@ -495,8 +539,10 @@ var birdCollisionMat = new Matrix4();
 
 function drawBird( vpMatrix, birdMatrix, cur_cameraX, cur_cameraY, cur_cameraZ) {
     // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
-    drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
+    // drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
     
+
+
     //first row
     for( var i = 0; i <= 5 ; i++){
         birdMatrix.setIdentity();
