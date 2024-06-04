@@ -87,9 +87,13 @@ function interface() {
      var viewDir = new Vector3([cameraDirX, cameraDirY, cameraDirZ]);
      var newViewDir = rotateMatrix.multiplyVector3(viewDir);
      //if up arrow key is pressed
+     var flapSound = document.getElementById('flap-sound');
+    flapSound.playbackRate = 1.0;
+
      if( event.key == 'ArrowUp'){
         console.log('up')
         isFlapping = true;
+        flapSound.play();
         draw_all()
      } 
      else if( event.key == 'a' || event.key == 'A'){
@@ -106,13 +110,9 @@ function interface() {
           draw_all()
       }else if ( event.key == 'w' || event.key == 'W'){
           console.log('W')
-          cameraX -= newViewDir.elements[0] * 0.02;
-          cameraY -= newViewDir.elements[1] * 0.02;
-          cameraZ -= newViewDir.elements[2] * 0.02;
-          draw_all()
-      }else if ( (event.key == 'w' || event.key == 'W' ) && ( event.key == 'd' || event.key == 'D') ){
-          console.log('W+D')
-          bodyYMove += 0.1;
+          thirdcameraX += newViewDir.elements[0] * 0.02;
+          thirdcameraY += newViewDir.elements[1] * 0.02;
+          thirdcameraZ += newViewDir.elements[2] * 0.02;
           draw_all()
       }else if ( event.key == 'r' || event.key == 'R'){ 
         console.log('R')

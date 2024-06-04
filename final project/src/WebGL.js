@@ -28,7 +28,6 @@ var birdX = 0 , birdY = 0, birdZ = 0;
 var isFlapping = false;
 var birdYoffset = 0;
 var birdYMove = -0.02;
-// var birdYMove = 0;
 
 //pillar
 var pillarX = 0, pillarY = 0, pillarZ = 0;
@@ -39,6 +38,8 @@ var pipeXMove = -0.05;
 var points = 0;
 var end = false;
 var first = true;
+
+var gameStart = false;
 
 async function main(){
     canvas = document.getElementById('webgl');
@@ -96,7 +97,15 @@ async function main(){
       256
     );
     
-
+    programTextureOnCube = compileShader(gl, VSHADER_SOURCE_TEXTURE_ON_CUBE, FSHADER_SOURCE_TEXTURE_ON_CUBE);
+    programTextureOnCube.a_Position = gl.getAttribLocation(programTextureOnCube, 'a_Position'); 
+    programTextureOnCube.a_Normal = gl.getAttribLocation(programTextureOnCube, 'a_Normal'); 
+    programTextureOnCube.u_MvpMatrix = gl.getUniformLocation(programTextureOnCube, 'u_MvpMatrix'); 
+    programTextureOnCube.u_modelMatrix = gl.getUniformLocation(programTextureOnCube, 'u_modelMatrix'); 
+    programTextureOnCube.u_normalMatrix = gl.getUniformLocation(programTextureOnCube, 'u_normalMatrix');
+    programTextureOnCube.u_ViewPosition = gl.getUniformLocation(programTextureOnCube, 'u_ViewPosition');
+    programTextureOnCube.u_envCubeMap = gl.getUniformLocation(programTextureOnCube, 'u_envCubeMap'); 
+    programTextureOnCube.u_Color = gl.getUniformLocation(programTextureOnCube, 'u_Color'); 
 
     shadowProgram = compileShader(gl, VSHADER_SHADOW_SOURCE, FSHADER_SHADOW_SOURCE);
     shadowProgram.a_Position = gl.getAttribLocation(shadowProgram, 'a_Position');
@@ -127,7 +136,8 @@ async function main(){
     modelMatrix = new Matrix4();
     normalMatrix = new Matrix4();
 
-    fbo = initFrameBuffer(gl);
+    // fbo = initFrameBuffer(gl);
+    reflectfbo = initFrameBufferForCubemapRendering();
     shadowfbo = initFrameBuffer(gl);
 
     gl.enable(gl.DEPTH_TEST);
@@ -139,13 +149,12 @@ async function main(){
 
     
     var gameTime = 60;
-    // var points = 0;
 
     var timerElement = document.getElementById('time'); 
     var pointElement = document.getElementById('point');
 
     var timer = setInterval(() => {
-        if (gameTime > 0 && !end) {
+        if (gameStart && gameTime > 0 && !end) {
             gameTime--;
             timerElement.textContent = gameTime;
         } else {
@@ -153,50 +162,82 @@ async function main(){
         }
     }, 1000);
 
-    setInterval(() => {
-        tick;
-    }, 1);
+    //start button
+    document.getElementById("startButton").addEventListener("click", startGame);
 
-    var tick = function(){  
-        pointElement.textContent = points;
-
-
-        if(end) return;
-        
-        if( birdYoffset < -3 ){
-            console.log("end");
-            birdoffset = 0;
-            end = true;
-        } else{
-            firstcameraY += birdYMove;
-            birdYoffset += birdYMove; // offsets add up all the movement
-        }
-
-        
-        if( pipeXoffset < -40 ){
-          pipeXoffset = 0;
-        } 
-
-        if( first ){
-          if( pipeXoffset2 < -40 ){
-            pipeXoffset2 = 0;
-            first = false;
-          }
-        } else {
-          if( pipeXoffset2 < -40 ){
-            pipeXoffset2 = 0;
-          }
-        }
-
-        pipeXoffset += pipeXMove;
-        pipeXoffset2 += pipeXMove;
-        
-
-        draw_all();
-        requestAnimationFrame(tick);
+    function startGame(){
+      document.getElementById("startButton").style.display = "none";
+      gameStart = true;
+      console.log( gameStart)
     }
 
+
+    setInterval(() => {
+      tick;
+    }, 1);  
+
+    
+    var amplitude = 0.5; // Maximum distance from the center position
+    var frequency = 1; // Oscillations per second
+    var startTime = null;
+
+    var tick = function(timestamp){  
+      if(end) return;
+
+      if (!startTime) startTime = timestamp;
+      var elapsedTime = (timestamp - startTime) / 1000; // Time in seconds
+
+      if (!gameStart) {
+          // Oscillate birdYoffset using a sine function
+          firstcameraY = amplitude * Math.sin(2 * Math.PI * frequency * elapsedTime);
+          birdYoffset = amplitude * Math.sin(2 * Math.PI * frequency * elapsedTime);
+      }
+
+      
+      if( !gameStart ) {
+        gameTime == 60;
+      }
+
+      pointElement.textContent = points;
+
+      console.log(gameStart);
+
+      if( birdYoffset < -3 ){
+          console.log("end");
+          birdoffset = 0;
+          end = true;
+      } else{
+          firstcameraY += birdYMove;
+          birdYoffset += birdYMove; // offsets add up all the movement
+      }
+
+      
+      if( pipeXoffset < -40 ){
+        pipeXoffset = 0;
+      } 
+
+      if( first ){
+        if( pipeXoffset2 < -40 ){
+          pipeXoffset2 = 0;
+          first = false;
+        }
+      } else {
+        if( pipeXoffset2 < -40 ){
+          pipeXoffset2 = 0;
+        }
+      }
+
+      if( gameStart ){
+        pipeXoffset += pipeXMove;
+        pipeXoffset2 += pipeXMove;
+      }
+
+      draw_all();
+      requestAnimationFrame(tick);
+    }
     tick();
+
+    
     
 }
 
@@ -296,6 +337,8 @@ function draw_all(){
     gl.viewport(0, 0, canvas.width, canvas.width);
     draw_world(vMatrix, pMatrix, vpMatrix);
 
+    draw_all_reflection_object(vpMatrix);
+
 }
 
 function draw_shadow() {
@@ -317,21 +360,21 @@ function draw_world(vMatrix, pMatrix, vpMatrix) {
 }
 
 
-function draw( vMatrix, pMatrix , vpMatrix ){
-  //cube map
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0, 0, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  gl.enable(gl.DEPTH_TEST);
-  draw_cubemap( vMatrix, pMatrix);
+// function draw( vMatrix, pMatrix , vpMatrix ){
+//   //cube map
+//   gl.viewport(0, 0, canvas.width, canvas.height);
+//   gl.clearColor(0, 0, 0, 1);
+//   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+//   gl.enable(gl.DEPTH_TEST);
+//   draw_cubemap( vMatrix, pMatrix);
 
-  //on screen
-  gl.useProgram(program);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);    
+//   //on screen
+//   gl.useProgram(program);
+//   gl.bindFramebuffer(gl.FRAMEBUFFER, null);    
   
-  init_mdl();
-  drawRobot( vpMatrix );
-}
+//   init_mdl();
+//   drawRobot( vpMatrix );
+// }
 
 function draw_cubemap( vMatrix, pMatrix ) {
   var vpFromCamera = new Matrix4();
@@ -357,9 +400,42 @@ function draw_cubemap( vMatrix, pMatrix ) {
   gl.drawArrays(gl.TRIANGLES, 0, quadObj.numVertices);
 }
 
-function drawOneObject(
-  obj, mdlMatrix, vpMatrix, colorR, colorG, colorB , cameraX, cameraY, cameraZ
-){
+function draw_all_reflection_object(vpMatrix) {
+  var cur_cameraX = new Matrix4();
+  var cur_cameraY = new Matrix4();
+  var cur_cameraZ = new Matrix4();
+  if (third_view) {
+      cur_cameraX = thirdcameraX;
+      cur_cameraY = thirdcameraY;
+      cur_cameraZ = thirdcameraZ;
+  } else {
+      cur_cameraX = firstcameraX;
+      cur_cameraY = firstcameraY;
+      cur_cameraZ = firstcameraZ;
+  }
+  drawDynamicReflectionObject(
+      pipe,
+      pipeMatrix,
+      vpMatrix,
+      cur_cameraX,
+      cur_cameraY,
+      cur_cameraZ,
+      width + pipeXoffset, -5 - gapYarr[1], 1.1 
+  );
+
+    drawDynamicReflectionObject(
+      pipe,
+      pipeMatrix8,
+      vpMatrix,
+      cur_cameraX,
+      cur_cameraY,
+      cur_cameraZ,
+      -width -1.8 - pipeXoffset - pipeGapX * 3, -5 + gapYarr[4], 1.1
+  );
+  
+}
+
+function drawOneObject( obj, mdlMatrix, vpMatrix, colorR, colorG, colorB , cameraX, cameraY, cameraZ){
     gl.useProgram(program);
     var mvpMatrix = new Matrix4();
     var modelMatrix = new Matrix4();
@@ -482,6 +558,107 @@ function drawOneObjectOnShadowfbo(obj, mdlMatrix) {
   return mvpFromLight;
 }
 
+function drawDynamicReflectionObject(
+  obj, modelMatrix, vpMatrix, cameraX, cameraY, cameraZ, posX, posY, posZ
+) {
+  drawReflectFbo(posX, posY, posZ);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.useProgram(programTextureOnCube);
+  let mvpMatrix = new Matrix4();
+  let normalMatrix = new Matrix4();
+  mvpMatrix.set(vpMatrix);
+  mvpMatrix.multiply(modelMatrix);
+
+  //normal matrix
+  normalMatrix.setInverseOf(modelMatrix);
+  normalMatrix.transpose();
+
+  gl.uniform3f(programTextureOnCube.u_ViewPosition, cameraX, cameraY, cameraZ );
+  gl.uniform3f(programTextureOnCube.u_Color, 0.1, 0.1, 0.1);
+  gl.uniformMatrix4fv( programTextureOnCube.u_MvpMatrix, false, mvpMatrix.elements);
+  gl.uniformMatrix4fv( programTextureOnCube.u_modelMatrix, false, modelMatrix.elements);
+  gl.uniformMatrix4fv( programTextureOnCube.u_normalMatrix, false, normalMatrix.elements );
+
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, reflectfbo.texture);
+  gl.uniform1i(programTextureOnCube.u_envCubeMap, 2);
+
+  for (let i = 0; i < obj.length; i++) {
+      initAttributeVariable(
+          gl,
+          programTextureOnCube.a_Position,
+          obj[i].vertexBuffer
+      );
+      initAttributeVariable(
+          gl,
+          programTextureOnCube.a_Normal,
+          obj[i].normalBuffer
+      );
+      gl.drawArrays(gl.TRIANGLES, 0, obj[i].numVertices);
+  }
+}
+
+function drawReflectFbo(posX, posY, posZ) {
+  //camera 6 direction to render 6 cubemap faces
+  var ENV_CUBE_LOOK_DIR = [
+      [1.0, 0.0, 0.0],
+      [-1.0, 0.0, 0.0],
+      [0.0, 1.0, 0.0],
+      [0.0, -1.0, 0.0],
+      [0.0, 0.0, 1.0],
+      [0.0, 0.0, -1.0],
+  ];
+
+  //camera 6 look up vector to render 6 cubemap faces
+  var ENV_CUBE_LOOK_UP = [
+      [0.0, -1.0, 0.0],
+      [0.0, -1.0, 0.0],
+      [0.0, 0.0, 1.0],
+      [0.0, 0.0, -1.0],
+      [0.0, -1.0, 0.0],
+      [0.0, -1.0, 0.0],
+  ];
+
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, reflectfbo);
+  // gl.viewport(0, 0, 300, 300);
+  gl.viewport(0, 0, offScreenWidth, offScreenHeight);
+  gl.clearColor(1.0, 0.0, 0.0, 1);
+  for (var side = 0; side < 6; side++) {
+      gl.framebufferTexture2D(
+          gl.FRAMEBUFFER,
+          gl.COLOR_ATTACHMENT0,
+          gl.TEXTURE_CUBE_MAP_POSITIVE_X + side,
+          reflectfbo.texture,
+          0
+      );
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      let vMatrix = new Matrix4();
+      let pMatrix = new Matrix4();
+      pMatrix.setPerspective(90, 1, 1, 100);
+      vMatrix.lookAt(
+          posX,
+          posY,
+          posZ,
+          posX + ENV_CUBE_LOOK_DIR[side][0],
+          posY + ENV_CUBE_LOOK_DIR[side][1],
+          posZ + ENV_CUBE_LOOK_DIR[side][2],
+          ENV_CUBE_LOOK_UP[side][0],
+          ENV_CUBE_LOOK_UP[side][1],
+          ENV_CUBE_LOOK_UP[side][2]
+      );
+      let vpMatrix = new Matrix4();
+      vpMatrix.set(pMatrix);
+      vpMatrix.multiply(vMatrix);
+
+      draw_world(vMatrix, pMatrix, vpMatrix);
+      draw_cubemap( vMatrix, pMatrix) ;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+}
 
 async function load_all_texture() {
   //soccer ball

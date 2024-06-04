@@ -107,6 +107,53 @@ function initTexture(gl, img, imgName){
   
     return texture;
   }
+
+  function initFrameBufferForCubemapRendering() {
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
+    // 6 2D textures
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    for (let i = 0; i < 6; i++) {
+        gl.texImage2D(
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            0,
+            gl.RGBA,
+            offScreenWidth,
+            offScreenHeight,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            null
+        );
+    }
+
+    //create and setup a render buffer as the depth buffer
+    var depthBuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+    gl.renderbufferStorage(
+        gl.RENDERBUFFER,
+        gl.DEPTH_COMPONENT16,
+        offScreenWidth,
+        offScreenHeight
+    );
+
+    //create and setup framebuffer: linke the depth buffer to it (no color buffer here)
+    var frameBuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+    gl.framebufferRenderbuffer(
+        gl.FRAMEBUFFER,
+        gl.DEPTH_ATTACHMENT,
+        gl.RENDERBUFFER,
+        depthBuffer
+    );
+
+    frameBuffer.texture = texture;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    return frameBuffer;
+}
   
   function parseOBJ(text) {
     // because indices are base 1 let's just fill in the 0th data

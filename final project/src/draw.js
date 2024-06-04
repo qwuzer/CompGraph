@@ -141,6 +141,11 @@ gapYarr = randomPipeGapY();
 
 
 function init_mdl(){
+    //set cube mdl
+    mdlMatrix.setIdentity();
+    mdlMatrix.translate(0, 0, 40);
+    mdlMatrix.scale(10,10,10);
+
     //set bird mdl
     if(isFlapping){
         birdYoffset += 0.5;
@@ -162,10 +167,6 @@ function init_mdl(){
     pipeMatrix.translate( width + pipeXoffset, -5 - gapYarr[1], 1.1); // z off by 1.1 
     pipeMatrix.scale(0.04, 0.1, 0.04);
     // console.log("Y: " + (-5 - gapYarr[1] + 6 ));
-    
-    mdlMatrix.setIdentity();
-    mdlMatrix.translate(width + pipeXoffset, -5 - gapYarr[1] + 3, 1.1);
-
 
     pipeMatrix2.setIdentity(); 
     pipeMatrix2.rotate(180, 0, 0, 1); 
@@ -264,12 +265,16 @@ function init_mdl(){
     pipeMatrix20.translate( -width -1.8 - pipeXoffset2 - pipeGapX * 4, -5 + gapYarr[0], 1.1);
     pipeMatrix20.scale(0.04, 0.08, 0.04);
 
+    var hitSound = document.getElementById('hit-sound');
+    hitSound.playbackRate = 2.0;
+
     //lose
     for( var i = 1; i < 6; i++){
         var j = i - 1;
         if( (-5 - gapYarr[i] + 6.6 < birdY + birdYoffset && (width + pipeXoffset + pipeGapX * j  <= 0.05 && width + pipeXoffset + pipeGapX * j >= 0 )) 
             || (-5 - gapYarr[i] + 3.4 > birdY + -birdScale * 11 * 2 + birdYoffset  && (width + pipeXoffset + pipeGapX * j<= 0.05 && width + pipeXoffset + pipeGapX * j>= 0 ))){
-            end = true;
+            hitSound.play();
+             end = true;
         }
     }
     for( var i = 6; i < 11; i++){
@@ -296,22 +301,26 @@ function init_mdl(){
         if( i == 10 ) i = 0;
         if( (-5 - gapYarr[i] + 6.6 < birdY + birdYoffset && (width + pipeXoffset2 + pipeGapX * j <= 0.05 && width + pipeXoffset2 + pipeGapX * j >= 0 )) 
             || (-5 - gapYarr[i] + 3.4> birdY + -birdScale * 11 * 2 + birdYoffset  && (width + pipeXoffset2 + pipeGapX * j <= 0.05 && width + pipeXoffset2 + pipeGapX * j>= 0 ))){
-            end = true;
+                hitSound.play();    
+                end = true;
         }
         if( i == 0 ) break;
     }
 
-
+    var pointSound = document.getElementById('point-sound');
+    pointSound.playbackRate = 2.0;
     //points
     for(var i = 0; i < 5; i++ ){
         if(width + pipeXoffset + pipeGapX * i <= 0.05 && width + pipeXoffset + pipeGapX * i >= 0){
             points += 1;
+            pointSound.play();
         }
     }
 
    for( var i = 0; i < 5; i++){
         if(width + pipeXoffset2 + pipeGapX * i <= 0.05 && width + pipeXoffset2 + pipeGapX * i >= 0){
             points += 1;
+            pointSound.play();
         }
     }
 
@@ -483,10 +492,8 @@ function drawRobot( vpMatrix ) {
     //bird1
     drawBird( vpMatrix, birdMatrix, cur_cameraX, cur_cameraY, cur_cameraZ);
     
-    //test
-    // drawObjectWithTexture(cube, mdlMatrix, vpMatrix, pipeMdl1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
-
     //pipe
+    
     drawObjectWithTexture(pipe, pipeMatrix, vpMatrix, pipeMdl1FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
     drawObjectWithTexture(pipe, pipeBottom, vpMatrix, pipeBottomFromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
     drawObjectWithTexture(pipe, pipeMatrix2, vpMatrix, pipeMdl2FromLight, cur_cameraX, cur_cameraY, cur_cameraZ,"pipeTex");
@@ -538,11 +545,7 @@ function drawRobot( vpMatrix ) {
 var birdCollisionMat = new Matrix4();
 
 function drawBird( vpMatrix, birdMatrix, cur_cameraX, cur_cameraY, cur_cameraZ) {
-    // drawOneObject(cube, birdMatrix, 0.4, 0.239, 0.078, false);
-    // drawOneObject( cube, birdMatrix, vpMatrix, 0.4, 0.239, 0.078, cur_cameraX, cur_cameraY, cur_cameraZ);
-    
-
-
+   
     //first row
     for( var i = 0; i <= 5 ; i++){
         birdMatrix.setIdentity();
