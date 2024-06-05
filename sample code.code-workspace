@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../Project-Dino"
+		},
+		{
+			"path": "../../test"
 		}
 	],
 	"settings": {
