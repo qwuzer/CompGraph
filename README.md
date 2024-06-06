@@ -11,3 +11,5 @@
   - Environment cube map displaying environment background
   - Shadow of the objects
   - Dynamic reflection that displays the surronding objects and env background
+
+![截圖 2024-06-05 凌晨12 18 22](https://github.com/qwuzer/CompGraph/assets/53393045/aa3ca1cc-1d6f-4ab7-8638-9a5862cfd269)
